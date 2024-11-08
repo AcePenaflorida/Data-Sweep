@@ -27,6 +27,12 @@ class _ClassificationPageState extends State<ClassificationPage> {
   // To store the text-based classifications
   List<String> selectedClassifications = [];
 
+  // To store the selected letter casing for each column
+  List<String> columnCasingSelections = [];
+
+  // To store the selected date format for each column classified as 'Date'
+  List<String> columnDateFormats = [];
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +42,12 @@ class _ClassificationPageState extends State<ClassificationPage> {
     // Initialize classifications for each column (4 options for each)
     columnClassifications =
         List.generate(columns.length, (index) => [0, 0, 0, 0]);
+
+    // Initialize the casing selections (empty by default)
+    columnCasingSelections = List.generate(columns.length, (index) => "");
+
+    // Initialize date format selections (empty by default)
+    columnDateFormats = List.generate(columns.length, (index) => "");
   }
 
   // Function to get the classification text based on the selection
@@ -93,13 +105,14 @@ class _ClassificationPageState extends State<ClassificationPage> {
         ),
       ),
       body: SingleChildScrollView(
-        // Wrap the entire body in SingleChildScrollView
+        // Make everything scrollable
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Uploaded file: ${widget.fileName}"),
-
             const SizedBox(height: 20),
+
             // Preview button to go to PreviewPage
             ElevatedButton(
               onPressed: () {
@@ -118,57 +131,140 @@ class _ClassificationPageState extends State<ClassificationPage> {
                 children: [Icon(Icons.remove_red_eye), Text("Preview Data")],
               ),
             ),
-
             const SizedBox(height: 20),
             Text(
                 "Let’s classify the remaining columns to better clean and analyze your dataset!"),
-
             const SizedBox(height: 20),
 
             // Horizontal scrolling for the DataTable
             SingleChildScrollView(
               scrollDirection: Axis.horizontal, // Horizontal scroll for columns
               child: Container(
-                // Fixed height for vertical scrolling of rows
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical, // Vertical scroll for rows
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text("Column Name")),
-                      DataColumn(label: Text("Numerical")),
-                      DataColumn(label: Text("Categorical")),
-                      DataColumn(label: Text("Non-Categorical")),
-                      DataColumn(label: Text("Date")),
-                    ],
-                    rows: List.generate(columns.length, (index) {
-                      return DataRow(cells: [
-                        DataCell(Text(columns[index])),
-                        DataCell(_buildRadioButton(index, 0, "Numerical")),
-                        DataCell(_buildRadioButton(index, 1, "Categorical")),
-                        DataCell(
-                            _buildRadioButton(index, 2, "Non-Categorical")),
-                        DataCell(_buildRadioButton(index, 3, "Date")),
-                      ]);
-                    }),
-                  ),
+                child: DataTable(
+                  columns: const [
+                    DataColumn(label: Text("Column Name")),
+                    DataColumn(label: Text("Numerical")),
+                    DataColumn(label: Text("Categorical")),
+                    DataColumn(label: Text("Non-Categorical")),
+                    DataColumn(label: Text("Date")),
+                  ],
+                  rows: List.generate(columns.length, (index) {
+                    return DataRow(cells: [
+                      DataCell(Text(columns[index])),
+                      DataCell(_buildRadioButton(index, 0, "Numerical")),
+                      DataCell(_buildRadioButton(index, 1, "Categorical")),
+                      DataCell(_buildRadioButton(index, 2, "Non-Categorical")),
+                      DataCell(_buildRadioButton(index, 3, "Date")),
+                    ]);
+                  }),
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+
+            // Column layout for letter casing and date format selection
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: List.generate(columns.length, (index) {
+                return Column(
+                  children: [
+                    // Display letter casing section if the column is Categorical or Non-Categorical
+                    if (columnClassifications[index][1] == 1 ||
+                        columnClassifications[index][2] == 1)
+                      Row(
+                        children: [
+                          Text("Select letter casing for ${columns[index]}:"),
+                          Expanded(
+                            child: DropdownButton<String>(
+                              hint: Text("Select casing"),
+                              value: columnCasingSelections[index].isNotEmpty
+                                  ? columnCasingSelections[index]
+                                  : null,
+                              items: [
+                                DropdownMenuItem(
+                                    value: "UPPERCASE",
+                                    child: Text("UPPERCASE")),
+                                DropdownMenuItem(
+                                    value: "lowercase",
+                                    child: Text("lowercase")),
+                                DropdownMenuItem(
+                                    value: "Sentence case",
+                                    child: Text("Sentence case")),
+                                DropdownMenuItem(
+                                    value: "Title Case",
+                                    child: Text("Title Case")),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  columnCasingSelections[index] = value ?? "";
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    // Display date format section if the column is Date
+                    if (columnClassifications[index][3] == 1)
+                      Row(
+                        children: [
+                          Text("Select date format for ${columns[index]}:"),
+                          Expanded(
+                            child: DropdownButton<String>(
+                              hint: Text("Select format"),
+                              value: columnDateFormats[index].isNotEmpty
+                                  ? columnDateFormats[index]
+                                  : null,
+                              items: [
+                                DropdownMenuItem(
+                                    value: "mm/dd/yy", child: Text("mm/dd/yy")),
+                                DropdownMenuItem(
+                                    value: "dd/mm/yy", child: Text("dd/mm/yy")),
+                                DropdownMenuItem(
+                                    value: "yy/mm/dd", child: Text("yy/mm/dd")),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  columnDateFormats[index] = value ?? "";
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                );
+              }),
+            ),
+            const SizedBox(height: 20),
 
             // Submit Button
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  // Generate the selected classifications for each column
+                  // Generate the selected classifications with case and date format for each column
                   selectedClassifications =
                       List.generate(columns.length, (index) {
-                    return '${columns[index]}: ${getClassificationText(index)}';
+                    String classificationText =
+                        '${columns[index]}: ${getClassificationText(index)}';
+
+                    // Add the casing and date format info
+                    if (columnClassifications[index][1] == 1 ||
+                        columnClassifications[index][2] == 1) {
+                      classificationText +=
+                          " - ${columnCasingSelections[index]}";
+                    }
+
+                    if (columnClassifications[index][3] == 1) {
+                      classificationText += " - ${columnDateFormats[index]}";
+                    }
+
+                    return classificationText;
                   });
                 });
               },
               child: Text("Submit Classification"),
             ),
-
             const SizedBox(height: 20),
 
             // Display selected classifications
@@ -185,21 +281,24 @@ class _ClassificationPageState extends State<ClassificationPage> {
     );
   }
 
-  // Function to create a radio button for each classification option
-  Widget _buildRadioButton(int columnIndex, int optionIndex, String label) {
+  // Function to build radio buttons for each classification option
+  Widget _buildRadioButton(int index, int type, String label) {
     return Row(
       children: [
         Radio<int>(
-          value: optionIndex,
-          groupValue: columnClassifications[columnIndex].indexOf(1),
+          value: type,
+          groupValue: columnClassifications[index].indexOf(1),
           onChanged: (int? value) {
             setState(() {
-              // Update the classification for this column
-              columnClassifications[columnIndex] =
-                  List.generate(4, (i) => i == value ? 1 : 0);
+              // Reset other selections and set the selected value to 1
+              for (int i = 0; i < 4; i++) {
+                columnClassifications[index][i] = 0;
+              }
+              columnClassifications[index][value!] = 1;
             });
           },
         ),
+        Text(label),
       ],
     );
   }
