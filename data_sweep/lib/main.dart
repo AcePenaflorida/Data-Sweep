@@ -28,13 +28,11 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Add the image here
             Image.asset(
               'assets/Grizz.jpg',
-              height: 150.0, // Adjust the height to make it larger or smaller
+              height: 150.0,
             ),
-            SizedBox(
-                height: 20), // Add some spacing between the image and button
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 FilePickerResult? result = await FilePicker.platform.pickFiles(

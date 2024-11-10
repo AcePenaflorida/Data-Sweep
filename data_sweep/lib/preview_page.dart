@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 
 class PreviewPage extends StatelessWidget {
-  final String filePath;
   final List<List<dynamic>> csvData;
   final String fileName;
 
   const PreviewPage({
     Key? key,
-    required this.filePath,
     required this.csvData,
     required this.fileName,
   }) : super(key: key);

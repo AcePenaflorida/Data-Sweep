@@ -1,15 +1,13 @@
 import 'package:data_sweep/main.dart';
 import 'package:flutter/material.dart';
-import 'preview_page.dart'; // Assuming you have this page to display the preview
+import 'issues_page.dart';
+import 'preview_page.dart';
 
 class ClassificationPage extends StatefulWidget {
-  final String filePath;
-  final List<List<dynamic>>
-      csvData; // Store CSV data passed from previous pages
+  final List<List<dynamic>> csvData;
   final String fileName;
 
   ClassificationPage({
-    required this.filePath,
     required this.csvData,
     required this.fileName,
   });
@@ -19,49 +17,71 @@ class ClassificationPage extends StatefulWidget {
 }
 
 class _ClassificationPageState extends State<ClassificationPage> {
-  late List<String> columns; // To store column names
-
-  // Variables to track selected classifications for each column
+  late List<String> columns;
   List<List<int>> columnClassifications = [];
-
-  // To store the text-based classifications
   List<String> selectedClassifications = [];
-
-  // To store the selected letter casing for each column
   List<String> columnCasingSelections = [];
-
-  // To store the selected date format for each column classified as 'Date'
   List<String> columnDateFormats = [];
 
   @override
   void initState() {
     super.initState();
-    // Extract column names from the first row of the CSV data
     columns = List<String>.from(widget.csvData[0]);
-
-    // Initialize classifications for each column (4 options for each)
     columnClassifications =
         List.generate(columns.length, (index) => [0, 0, 0, 0]);
-
-    // Initialize the casing selections (empty by default)
     columnCasingSelections = List.generate(columns.length, (index) => "");
-
-    // Initialize date format selections (empty by default)
     columnDateFormats = List.generate(columns.length, (index) => "");
   }
 
-  // Function to get the classification text based on the selection
   String getClassificationText(int index) {
-    if (columnClassifications[index][0] == 1) {
-      return "Numerical";
-    } else if (columnClassifications[index][1] == 1) {
-      return "Categorical";
-    } else if (columnClassifications[index][2] == 1) {
-      return "Non-Categorical";
-    } else if (columnClassifications[index][3] == 1) {
-      return "Date";
-    }
+    print(
+        "Column Classification for index $index: ${columnClassifications[index]}"); // Debugging line
+    if (columnClassifications[index][0] == 1) return "Numerical";
+    if (columnClassifications[index][1] == 1) return "Categorical";
+    if (columnClassifications[index][2] == 1) return "Non-Categorical";
+    if (columnClassifications[index][3] == 1) return "Date";
     return "Unclassified";
+  }
+
+  void showCategoryDescription(String category) {
+    String description;
+    switch (category) {
+      case "Numerical":
+        description =
+            "Numerical columns contain numbers only. Example: Age, Salary.";
+        break;
+      case "Categorical":
+        description =
+            "Categorical columns contain discrete categories. With choices. Example: Gender, Country.";
+        break;
+      case "Non-Categorical":
+        description =
+            "Non-Categorical columns contain free-form text. Example: Name, comments.";
+        break;
+      case "Date":
+        description = "Date columns contain date values. Example: 01/01/2023.";
+        break;
+      default:
+        description = "No description available.";
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(category),
+          content: Text(description),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -72,7 +92,6 @@ class _ClassificationPageState extends State<ClassificationPage> {
         leading: IconButton(
           icon: Icon(Icons.cancel),
           onPressed: () {
-            // Show cancel confirmation dialog
             showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -82,19 +101,18 @@ class _ClassificationPageState extends State<ClassificationPage> {
                     TextButton(
                       child: Text("Yes"),
                       onPressed: () {
-                        Navigator.pop(context); // Close dialog
+                        Navigator.pop(context);
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(builder: (context) => HomePage()),
-                          (Route<dynamic> route) =>
-                              false, // Removes all previous routes
-                        ); // Go back to previous page
+                          (Route<dynamic> route) => false,
+                        );
                       },
                     ),
                     TextButton(
                       child: Text("No"),
                       onPressed: () {
-                        Navigator.pop(context); // Close dialog
+                        Navigator.pop(context);
                       },
                     ),
                   ],
@@ -105,23 +123,19 @@ class _ClassificationPageState extends State<ClassificationPage> {
         ),
       ),
       body: SingleChildScrollView(
-        // Make everything scrollable
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Uploaded file: ${widget.fileName}"),
             const SizedBox(height: 20),
-
-            // Preview button to go to PreviewPage
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => PreviewPage(
-                      filePath: widget.filePath,
-                      csvData: widget.csvData, // Pass CSV data to preview
+                      csvData: widget.csvData,
                       fileName: widget.fileName,
                     ),
                   ),
@@ -132,50 +146,132 @@ class _ClassificationPageState extends State<ClassificationPage> {
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-                "Let’s classify the remaining columns to better clean and analyze your dataset!"),
+            Text("Classify columns to clean and analyze your dataset!"),
             const SizedBox(height: 20),
-
-            // Horizontal scrolling for the DataTable
             SingleChildScrollView(
-              scrollDirection: Axis.horizontal, // Horizontal scroll for columns
-              child: Container(
-                child: DataTable(
-                  columns: const [
-                    DataColumn(label: Text("Column Name")),
-                    DataColumn(label: Text("Numerical")),
-                    DataColumn(label: Text("Categorical")),
-                    DataColumn(label: Text("Non-Categorical")),
-                    DataColumn(label: Text("Date")),
-                  ],
-                  rows: List.generate(columns.length, (index) {
-                    return DataRow(cells: [
-                      DataCell(Text(columns[index])),
-                      DataCell(_buildRadioButton(index, 0, "Numerical")),
-                      DataCell(_buildRadioButton(index, 1, "Categorical")),
-                      DataCell(_buildRadioButton(index, 2, "Non-Categorical")),
-                      DataCell(_buildRadioButton(index, 3, "Date")),
-                    ]);
-                  }),
-                ),
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columnSpacing: 10, // Control space between columns
+                columns: [
+                  DataColumn(label: Text("")),
+                  DataColumn(
+                    label: InkWell(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                            maxWidth: 100), // Adjust width if necessary
+                        child: Text(
+                          "Numerical",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            decoration: TextDecoration.underline,
+                            color: Colors.blue,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      onTap: () => showCategoryDescription("Numerical"),
+                    ),
+                  ),
+                  DataColumn(
+                    label: InkWell(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 100),
+                        child: Text(
+                          "Categorical",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            decoration: TextDecoration.underline,
+                            color: Colors.blue,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      onTap: () => showCategoryDescription("Categorical"),
+                    ),
+                  ),
+                  DataColumn(
+                    label: InkWell(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 100),
+                        child: Text(
+                          "Non-Categorical",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            decoration: TextDecoration.underline,
+                            color: Colors.blue,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      onTap: () => showCategoryDescription("Non-Categorical"),
+                    ),
+                  ),
+                  DataColumn(
+                    label: InkWell(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 100),
+                        child: Text(
+                          "Date",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            decoration: TextDecoration.underline,
+                            color: Colors.blue,
+                          ),
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      onTap: () => showCategoryDescription("Date"),
+                    ),
+                  ),
+                ],
+                rows: List.generate(columns.length, (index) {
+                  return DataRow(cells: [
+                    DataCell(
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                            maxWidth: 50), // Set max width for text wrapping
+                        child: Text(
+                          columns[index], // Dynamically set column title
+                          style: TextStyle(fontSize: 12.0),
+                          softWrap: true, // Enable text wrapping
+                          maxLines: 2, // Allow up to 2 lines
+                          overflow: TextOverflow
+                              .ellipsis, // Use ellipsis if text overflows
+                        ),
+                      ),
+                    ),
+                    DataCell(_buildRadioButton(index, 0, "Numerical")),
+                    DataCell(_buildRadioButton(index, 1, "Categorical")),
+                    DataCell(_buildRadioButton(index, 2, "Non-Categorical")),
+                    DataCell(_buildRadioButton(index, 3, "Date")),
+                  ]);
+                }),
               ),
             ),
             const SizedBox(height: 20),
-
-            // Column layout for letter casing and date format selection
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(columns.length, (index) {
                 return Column(
                   children: [
-                    // Display letter casing section if the column is Categorical or Non-Categorical
                     if (columnClassifications[index][1] == 1 ||
                         columnClassifications[index][2] == 1)
                       Row(
                         children: [
-                          Text("Select letter casing for ${columns[index]}:"),
-                          Expanded(
+                          Flexible(
+                              child: Text(
+                                  "Letter casing for ${columns[index]}: ")),
+                          Flexible(
                             child: DropdownButton<String>(
+                              isExpanded: true,
                               hint: Text("Select casing"),
                               value: columnCasingSelections[index].isNotEmpty
                                   ? columnCasingSelections[index]
@@ -203,14 +299,15 @@ class _ClassificationPageState extends State<ClassificationPage> {
                           ),
                         ],
                       ),
-
-                    // Display date format section if the column is Date
                     if (columnClassifications[index][3] == 1)
                       Row(
                         children: [
-                          Text("Select date format for ${columns[index]}:"),
-                          Expanded(
+                          Flexible(
+                              child:
+                                  Text("Date format for ${columns[index]}: ")),
+                          Flexible(
                             child: DropdownButton<String>(
+                              isExpanded: true,
                               hint: Text("Select format"),
                               value: columnDateFormats[index].isNotEmpty
                                   ? columnDateFormats[index]
@@ -236,70 +333,129 @@ class _ClassificationPageState extends State<ClassificationPage> {
                 );
               }),
             ),
-            const SizedBox(height: 20),
-
-            // Submit Button
             ElevatedButton(
               onPressed: () {
-                setState(() {
-                  // Generate the selected classifications with case and date format for each column
-                  selectedClassifications =
-                      List.generate(columns.length, (index) {
-                    String classificationText =
-                        '${columns[index]}: ${getClassificationText(index)}';
+                bool allClassified = true;
+                bool allDropdownsSelected = true;
 
-                    // Add the casing and date format info
-                    if (columnClassifications[index][1] == 1 ||
-                        columnClassifications[index][2] == 1) {
-                      classificationText +=
-                          " - ${columnCasingSelections[index]}";
-                    }
+                for (int i = 0; i < columns.length; i++) {
+                  if (columnClassifications[i].indexOf(1) == -1) {
+                    allClassified = false;
+                    break;
+                  }
+                  if ((columnClassifications[i][1] == 1 ||
+                          columnClassifications[i][2] == 1) &&
+                      columnCasingSelections[i].isEmpty) {
+                    allDropdownsSelected = false;
+                    break;
+                  }
+                  if (columnClassifications[i][3] == 1 &&
+                      columnDateFormats[i].isEmpty) {
+                    allDropdownsSelected = false;
+                    break;
+                  }
+                }
 
-                    if (columnClassifications[index][3] == 1) {
-                      classificationText += " - ${columnDateFormats[index]}";
-                    }
+                if (!allClassified) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Incomplete Classification"),
+                        content: Text(
+                            "Please select a classification for each column."),
+                        actions: [
+                          TextButton(
+                            child: Text("OK"),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else if (!allDropdownsSelected) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Incomplete Selections"),
+                        content:
+                            Text("Please complete all dropdown selections."),
+                        actions: [
+                          TextButton(
+                            child: Text("OK"),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  // Print columns, classifications, casing selections, and date formats before updating the state
+                  for (int i = 0; i < columns.length; i++) {
+                    print("Column: ${columns[i]}");
+                    print("Classification: ${columnClassifications[i]}");
+                    print("Casing Selection: ${columnCasingSelections[i]}");
+                    print("Date Format: ${columnDateFormats[i]}");
+                  }
 
-                    return classificationText;
+                  setState(() {
+                    selectedClassifications =
+                        List.generate(columns.length, (index) {
+                      String classificationText =
+                          '${columns[index]}: ${getClassificationText(index)}';
+                      if (columnClassifications[index][1] == 1 ||
+                          columnClassifications[index][2] == 1) {
+                        classificationText +=
+                            " - ${columnCasingSelections[index]}";
+                      }
+                      if (columnClassifications[index][3] == 1) {
+                        classificationText += " - ${columnDateFormats[index]}";
+                      }
+                      return classificationText;
+                    });
                   });
-                });
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => IssuesPage(
+                        csvData: widget.csvData,
+                        columns: columns,
+                        classifications: columnClassifications,
+                        casingSelections: columnCasingSelections,
+                        dateFormats: columnDateFormats,
+                      ),
+                    ),
+                  );
+                }
               },
               child: Text("Submit Classification"),
             ),
-            const SizedBox(height: 20),
-
-            // Display selected classifications
-            if (selectedClassifications.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: selectedClassifications.map((classification) {
-                  return Text(classification);
-                }).toList(),
-              ),
           ],
         ),
       ),
     );
   }
 
-  // Function to build radio buttons for each classification option
-  Widget _buildRadioButton(int index, int type, String label) {
-    return Row(
-      children: [
-        Radio<int>(
-          value: type,
-          groupValue: columnClassifications[index].indexOf(1),
-          onChanged: (int? value) {
-            setState(() {
-              // Reset other selections and set the selected value to 1
-              for (int i = 0; i < 4; i++) {
-                columnClassifications[index][i] = 0;
-              }
-              columnClassifications[index][value!] = 1;
-            });
-          },
-        ),
-        Text(label),
-      ],
+  Widget _buildRadioButton(int index, int value, String category) {
+    return Radio<int>(
+      value: value,
+      groupValue: columnClassifications[index]
+          .indexOf(1), // Keep the correct value for groupValue
+      onChanged: (int? newValue) {
+        if (newValue != null) {
+          setState(() {
+            // Reset other classifications and update the selected category
+            columnClassifications[index] =
+                List.generate(4, (i) => i == newValue ? 1 : 0);
+          });
+        }
+      },
     );
   }
 }

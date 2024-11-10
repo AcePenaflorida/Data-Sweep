@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:data_sweep/config.dart'; // to get ip
 import 'package:csv/csv.dart';
 import 'package:data_sweep/classification_page.dart';
 import 'package:data_sweep/preview_page.dart';
@@ -52,38 +53,25 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
   // Function to handle the deletion of selected columns
   Future<List<List<dynamic>>> deleteColumns() async {
     try {
-      var uri = Uri.parse('http://192.168.254.106:5000/remove_columns');
+      var uri = Uri.parse('$baseURL/remove_columns');
       var request = http.MultipartRequest('POST', uri)
-        ..files.add(await http.MultipartFile.fromPath('file', widget.filePath));
-
-      // Adding selected columns to remove in the request
-      request.fields['columns'] = selectedColumns
-          .asMap()
-          .entries
-          .where((entry) => entry.value)
-          .map((entry) => columns[entry.key])
-          .join(',');
+        ..files.add(await http.MultipartFile.fromPath('file', widget.filePath))
+        ..fields['columns'] = selectedColumns
+            .asMap()
+            .entries
+            .where((entry) => entry.value)
+            .map((entry) => columns[entry.key])
+            .join(',');
 
       var response = await request.send();
       if (response.statusCode == 200) {
-        // Assuming the server sends back the cleaned CSV data
         final responseBody = await response.stream.bytesToString();
-        List<List<dynamic>> updatedCsvData =
-            const CsvToListConverter().convert(responseBody);
-        return updatedCsvData; // Return cleaned data
-      } else {
-        if (kDebugMode) {
-          print(
-              "Error: ${response.statusCode} - ${await response.stream.bytesToString()}");
-        }
-        return [];
+        return const CsvToListConverter().convert(responseBody);
       }
     } catch (e) {
-      if (kDebugMode) {
-        print("Exception: $e");
-      }
-      return [];
+      // Handle exception if needed
     }
+    return [];
   }
 
   @override
@@ -94,7 +82,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
         leading: IconButton(
           icon: const Icon(Icons.cancel),
           onPressed: () {
-            // Show cancel confirmation dialog
             showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -128,7 +115,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => PreviewPage(
-                    filePath: widget.filePath,
                     csvData: csvData, // Pass CSV data to preview
                     fileName: basename(widget.filePath),
                   ),
@@ -174,14 +160,12 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ClassificationPage(
-                      filePath: widget.filePath, // Pass the file path
                       csvData: updatedCsvData, // Pass the cleaned CSV data
                       fileName: basename(widget.filePath), // Pass the file name
                     ),
                   ),
                 );
               } else {
-                // ignore: use_build_context_synchronously
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text("Error deleting columns!"),
@@ -199,7 +183,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => ClassificationPage(
-                    filePath: widget.filePath, // Pass the file path
                     csvData: csvData, // Pass the original CSV data
                     fileName: basename(widget.filePath), // Pass the file name
                   ),
