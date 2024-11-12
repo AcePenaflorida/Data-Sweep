@@ -314,11 +314,11 @@ class _ClassificationPageState extends State<ClassificationPage> {
                                   : null,
                               items: [
                                 DropdownMenuItem(
-                                    value: "mm/dd/yy", child: Text("mm/dd/yy")),
+                                    value: "mm/dd/yyyy", child: Text("mm/dd/yyyy")),
                                 DropdownMenuItem(
-                                    value: "dd/mm/yy", child: Text("dd/mm/yy")),
+                                    value: "dd/mm/yyyy", child: Text("dd/mm/yyyy")),
                                 DropdownMenuItem(
-                                    value: "yy/mm/dd", child: Text("yy/mm/dd")),
+                                    value: "yyyy/mm/dd", child: Text("yyyy/mm/dd")),
                               ],
                               onChanged: (value) {
                                 setState(() {
@@ -412,14 +412,24 @@ class _ClassificationPageState extends State<ClassificationPage> {
                           columnClassifications[index][2] == 1) {
                         classificationText +=
                             " - ${columnCasingSelections[index]}";
-                      }
+                      } 
                       if (columnClassifications[index][3] == 1) {
                         classificationText += " - ${columnDateFormats[index]}";
                       }
                       return classificationText;
                     });
                   });
-
+                  print(columnDateFormats);
+                  String selectedDateFormat;
+                  if (columnDateFormats.length > 2) {
+                    selectedDateFormat = columnDateFormats[2];
+                  } else if (columnDateFormats.length == 2){
+                    selectedDateFormat = columnDateFormats[1];
+                  }
+                  else {
+                    selectedDateFormat = columnDateFormats.isNotEmpty ? columnDateFormats[0] : '';
+                  } 
+                  print("SelectedDateFormat: ${selectedDateFormat}");
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -428,7 +438,7 @@ class _ClassificationPageState extends State<ClassificationPage> {
                         columns: columns,
                         classifications: columnClassifications,
                         casingSelections: columnCasingSelections,
-                        dateFormats: columnDateFormats,
+                        dateFormats: selectedDateFormat,
                       ),
                     ),
                   );

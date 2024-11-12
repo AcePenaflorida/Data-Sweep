@@ -13,8 +13,8 @@ class IssuesPage extends StatelessWidget {
   final List<String> columns;
   final List<List<int>> classifications;
   final List<String> casingSelections;
-  final List<String> dateFormats;
-
+  final String dateFormats;
+  
   IssuesPage({
     required this.csvData,
     required this.columns,
@@ -22,6 +22,7 @@ class IssuesPage extends StatelessWidget {
     required this.casingSelections,
     required this.dateFormats,
   });
+
 
   Future<Map<String, List<String>>> detectIssues(
       List<List<dynamic>> data) async {
@@ -65,6 +66,8 @@ class IssuesPage extends StatelessWidget {
   }
 
   Future<List<List<dynamic>>> applyDateFormat(List<List<dynamic>> data) async {
+    // String chosenFormat = dateFormats[2];
+    print("applyDateFormat: Selected Date Format: ${dateFormats}");
     var uri = Uri.parse('$baseURL/apply_date_format');
     var response = await http.post(uri,
         body: json.encode({
@@ -74,7 +77,8 @@ class IssuesPage extends StatelessWidget {
           'classifications': classifications,
         }),
         headers: {'Content-Type': 'application/json'});
-
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}");
     if (response.statusCode == 200) {
       return List<List<dynamic>>.from(json.decode(response.body));
     } else {
@@ -82,18 +86,23 @@ class IssuesPage extends StatelessWidget {
     }
   }
 
+
   Future<Map<String, dynamic>> _formatDataFindIssues() async {
     List<List<dynamic>> formattedData = await applyLetterCasing(csvData);
     formattedData = await applyDateFormat(formattedData);
     Map<String, List<String>> issues = await detectIssues(formattedData);
     return {
-      'formattedData': formattedData,
+      'formattedData': formattedData, 
       'issues': issues,
-    };
+    }; 
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
+    // String selectedFormat = dateFormats[0];
     return Scaffold(
       appBar: AppBar(title: Text("Data Sweep - Issues")),
       body: FutureBuilder(
@@ -143,7 +152,7 @@ class IssuesPage extends StatelessWidget {
                       subtitle: columnIssues.isEmpty
                           ? Text("No issues found.")
                           : Text("Issues: ${columnIssues.join(', ')}"),
-                      onTap: () {
+                      onTap: () async {
                         print("Column value: $column");
                         int columnIndex = columns.indexOf(column);
                         print("columns.indexOf(column): $columnIndex");
@@ -198,15 +207,24 @@ class IssuesPage extends StatelessWidget {
                             );
                             break;
                           default: //date
-                            Navigator.push(
-                              context,
+                            
+                            List<List<dynamic>>? updatedDataset = await Navigator.push(context,
                               MaterialPageRoute(
                                 builder: (context) => DateIssuePage(
                                   columnName: column,
                                   issues: columnIssues,
+                                  csvData: csvData,
+                                  chosenDateFormat: dateFormats,
+                                  chosenColumns: columns,
+                                  chosenClassifications: classifications,
                                 ),
                               ),
                             );
+
+                            if (updatedDataset != null){
+                              cleanedData = updatedDataset;
+                            }
+                            
                             break;
                         }
                       },
