@@ -561,41 +561,33 @@ def detect_issues_route():
 
 @app.route('/remove_columns', methods=['POST'])
 def remove_columns():
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    print(f"Request received from IP: {client_ip}")
     try:
-        file = request.files['file']
-        columns_to_remove = request.form.get('columns', '').split(',')
-        
-        # Ensure the columns list is not empty
-        if not columns_to_remove or columns_to_remove == ['']:
+        data = request.json.get('data')
+        columns = request.json.get('columns')
+        columns_to_remove = request.json.get('columnsToRemove', [])
+
+        if not data or not columns:
+            return jsonify({'error': 'No data or columns provided'}), 400
+        if not columns_to_remove:
             return jsonify({'error': 'No columns specified to remove'}), 400
 
-        # Read the CSV file
-        df = pd.read_csv(file)
-        
-        #drop duplicates
-        df = df.drop_duplicates()
-        
-        # Drop specified columns
-        df_cleaned = df.drop(columns=columns_to_remove)
-        
-        # Save the cleaned file into a BytesIO object (binary mode)
-        cleaned_file = io.BytesIO()
-        df_cleaned.to_csv(cleaned_file, index=False)
-        cleaned_file.seek(0)  # Rewind the file to the beginning
+        # Convert the JSON data to a DataFrame
+        df = pd.DataFrame(data[1:], columns=columns)
 
-        # Send the cleaned file back as a response
-        return send_file(
-            cleaned_file,
-            mimetype='text/csv',
-            as_attachment=True,
-            download_name='cleaned_file.csv'
-        )
-        
+        # Drop duplicates
+        df = df.drop_duplicates()
+
+        # Remove the specified columns
+        df_cleaned = df.drop(columns=columns_to_remove)
+
+        # Convert the cleaned DataFrame back to JSON
+        result_data = [df_cleaned.columns.tolist()] + df_cleaned.values.tolist()
+        return jsonify(result_data)
+
     except Exception as e:
-        # Log the exception to see what went wrong
         print(f"Error: {str(e)}")
-        print("Detailed traceback:")
-        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/reformat_date', methods=['POST'])

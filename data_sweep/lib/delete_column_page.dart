@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:data_sweep/config.dart'; // to get ip
 import 'package:csv/csv.dart';
 import 'package:data_sweep/classification_page.dart';
@@ -53,25 +54,47 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
   // Function to handle the deletion of selected columns
   Future<List<List<dynamic>>> deleteColumns() async {
     try {
-      var uri = Uri.parse('$baseURL/remove_columns');
-      var request = http.MultipartRequest('POST', uri)
-        ..files.add(await http.MultipartFile.fromPath('file', widget.filePath))
-        ..fields['columns'] = selectedColumns
-            .asMap()
-            .entries
-            .where((entry) => entry.value)
-            .map((entry) => columns[entry.key])
-            .join(',');
+      List<String> columnsToRemove = selectedColumns
+          .asMap()
+          .entries
+          .where((entry) => entry.value)
+          .map((entry) => columns[entry.key])
+          .toList();
 
-      var response = await request.send();
+      if (columnsToRemove.isEmpty) {
+        ScaffoldMessenger.of(context as BuildContext).showSnackBar(
+          const SnackBar(
+            content: Text("No columns selected for deletion."),
+          ),
+        );
+        return [];
+      }
+
+      var uri = Uri.parse('$baseURL/remove_columns');
+
+      var requestBody = {
+        'data': csvData,
+        'columns': columns,
+        'columnsToRemove': columnsToRemove,
+      };
+
+      var response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestBody),
+      );
+
       if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        return const CsvToListConverter().convert(responseBody);
+        final decodedResponse = json.decode(response.body);
+        return List<List<dynamic>>.from(
+            decodedResponse.map((row) => List<dynamic>.from(row)));
+      } else {
+        throw Exception('Failed to delete columns');
       }
     } catch (e) {
-      // Handle exception if needed
+      print("Exception caught: $e");
+      return [];
     }
-    return [];
   }
 
   @override
