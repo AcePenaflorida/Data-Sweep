@@ -89,7 +89,10 @@ class IssuesPage extends StatelessWidget {
 
   Future<Map<String, dynamic>> _formatDataFindIssues() async {
     List<List<dynamic>> formattedData = await applyLetterCasing(csvData);
-    formattedData = await applyDateFormat(formattedData);
+    if (dateFormats.isNotEmpty){
+      formattedData = await applyDateFormat(formattedData);
+    }
+      
     Map<String, List<String>> issues = await detectIssues(formattedData);
     return {
       'formattedData': formattedData, 
@@ -102,7 +105,6 @@ class IssuesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // String selectedFormat = dateFormats[0];
     return Scaffold(
       appBar: AppBar(title: Text("Data Sweep - Issues")),
       body: FutureBuilder(
@@ -167,6 +169,7 @@ class IssuesPage extends StatelessWidget {
                         print("columnType: $columnType");
 
                         List<String> columnIssues = issues[column] ?? [];
+                        // List<List<dynamic>> dataset =
 
                         // Switch case based on the determined column type
                         switch (columnType) {
@@ -182,18 +185,24 @@ class IssuesPage extends StatelessWidget {
                             );
                             break;
                           case 1: // Categorical
-                            Navigator.push(
+                            List<List<dynamic>>? updatedDataset = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => CategoricalPage(
+                                  dataset: csvData,
                                   columnName: column,
-                                  categoricalData: List<String>.from(csvData
-                                      .map((row) => row[columns.indexOf(column)]
-                                          .toString())),
+                                  categoricalData: List<String>.from(
+                                  csvData.skip(1) // Skip the header row
+                                        .map((row) => row[columns.indexOf(column)].toString())
+                                  ),
                                   issues: columnIssues,
                                 ),
                               ),
                             );
+                            if (updatedDataset != null){
+                              cleanedData = updatedDataset;
+                            }
+                            
                             break;
                           case 2: // Non-categorical
                             Navigator.push(
@@ -213,7 +222,7 @@ class IssuesPage extends StatelessWidget {
                                 builder: (context) => DateIssuePage(
                                   columnName: column,
                                   issues: columnIssues,
-                                  csvData: csvData,
+                                  dataset: csvData,
                                   chosenDateFormat: dateFormats,
                                   chosenColumns: columns,
                                   chosenClassifications: classifications,

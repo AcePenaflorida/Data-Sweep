@@ -6,7 +6,7 @@ import 'package:data_sweep/config.dart';
 class DateIssuePage extends StatefulWidget {
   final String columnName;
   final List<String> issues;
-  final List<List<dynamic>> csvData;
+  final List<List<dynamic>> dataset;
   final String chosenDateFormat;
   final List<String> chosenColumns;
   final List<List<int>> chosenClassifications;
@@ -14,7 +14,7 @@ class DateIssuePage extends StatefulWidget {
   DateIssuePage({
     required this.columnName,
     required this.issues,
-    required this.csvData,
+    required this.dataset,
     required this.chosenDateFormat, 
     required this.chosenColumns, 
     required this.chosenClassifications,
@@ -25,12 +25,12 @@ class DateIssuePage extends StatefulWidget {
 }
 
 class _DateIssuePageState extends State<DateIssuePage> {
-  late List<List<dynamic>> _reformattedData;
+  late List<List<dynamic>> _reformattedDataset;
 
   @override
     void initState() {
       super.initState();
-      _reformattedData = widget.csvData;  // Initialize with the original data
+      _reformattedDataset = widget.dataset;  // Initialize with the original data
     }
   // Function to call the backend and reformat the data
   Future<List<List<dynamic>>> reformatInvalidDates(List<List<dynamic>> data) async {
@@ -43,6 +43,7 @@ class _DateIssuePageState extends State<DateIssuePage> {
       body: json.encode({
         'data': data,
         'dateFormats': widget.chosenDateFormat,
+        'classifications': widget.chosenClassifications,
       }),
       headers: {'Content-Type': 'application/json'}
     );
@@ -59,9 +60,9 @@ class _DateIssuePageState extends State<DateIssuePage> {
   // Function to resolve invalid dates
   Future<void> resolveInvalidDates() async {
     try {
-      List<List<dynamic>> reformattedData = await reformatInvalidDates(widget.csvData);
+      List<List<dynamic>> reformattedData = await reformatInvalidDates(widget.dataset);
       setState(() {
-        _reformattedData = reformattedData;
+        _reformattedDataset = reformattedData;
       });
     } catch (e) {
       print("Error: $e");
@@ -93,9 +94,9 @@ class _DateIssuePageState extends State<DateIssuePage> {
   // Function to handle the deletion of invalid dates
   Future<void> handleDeleteInvalidDates() async {
     try {
-      List<List<dynamic>> filteredData = await deleteInvalidDates(widget.csvData);
+      List<List<dynamic>> filteredData = await deleteInvalidDates(widget.dataset);
       setState(() {
-        _reformattedData = filteredData;
+        _reformattedDataset = filteredData;
       });
     } catch (e) {
       print("Error: $e");
@@ -140,14 +141,14 @@ Widget build(BuildContext context) {
                   // Invoke reformatting when the button is pressed
                   await resolveInvalidDates();
                   // Return the reformatted data back to the previous page
-                  Navigator.pop(context, _reformattedData);
+                  Navigator.pop(context, _reformattedDataset);
                 },
                 child: Text("Reformat"),
               ),
               ElevatedButton(
                 onPressed: () async {
                   await handleDeleteInvalidDates();
-                  Navigator.pop(context, _reformattedData);
+                  Navigator.pop(context, _reformattedDataset);
                 },
                 child: Text("Delete"),
               ),
