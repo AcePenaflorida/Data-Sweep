@@ -8,13 +8,13 @@ import 'dart:convert';
 import 'preview_page.dart';
 import 'package:data_sweep/config.dart';
 
-class IssuesPage extends StatelessWidget {
+class IssuesPage extends StatefulWidget {
   final List<List<dynamic>> csvData;
   final List<String> columns;
   final List<List<int>> classifications;
   final List<String> casingSelections;
   final String dateFormats;
-  
+
   IssuesPage({
     required this.csvData,
     required this.columns,
@@ -23,6 +23,18 @@ class IssuesPage extends StatelessWidget {
     required this.dateFormats,
   });
 
+  @override
+  _IssuesPageState createState() => _IssuesPageState();
+}
+
+class _IssuesPageState extends State<IssuesPage> {
+  late List<List<dynamic>> cleanedData;
+
+  @override
+  void initState() {
+    super.initState();
+    cleanedData = widget.csvData;
+  }
 
   Future<Map<String, List<String>>> detectIssues(
       List<List<dynamic>> data) async {
@@ -30,8 +42,8 @@ class IssuesPage extends StatelessWidget {
     var response = await http.post(
       uri,
       body: json.encode({
-        'columns': columns,
-        'classifications': classifications,
+        'columns': widget.columns,
+        'classifications': widget.classifications,
         'data': data,
       }),
       headers: {'Content-Type': 'application/json'},
@@ -53,8 +65,8 @@ class IssuesPage extends StatelessWidget {
     var response = await http.post(uri,
         body: json.encode({
           'data': data,
-          'columns': columns,
-          'casingSelections': casingSelections,
+          'columns': widget.columns,
+          'casingSelections': widget.casingSelections,
         }),
         headers: {'Content-Type': 'application/json'});
 
@@ -66,19 +78,15 @@ class IssuesPage extends StatelessWidget {
   }
 
   Future<List<List<dynamic>>> applyDateFormat(List<List<dynamic>> data) async {
-    // String chosenFormat = dateFormats[2];
-    print("applyDateFormat: Selected Date Format: ${dateFormats}");
     var uri = Uri.parse('$baseURL/apply_date_format');
     var response = await http.post(uri,
         body: json.encode({
           'data': data,
-          'columns': columns,
-          'dateFormats': dateFormats,
-          'classifications': classifications,
+          'columns': widget.columns,
+          'dateFormats': widget.dateFormats,
+          'classifications': widget.classifications,
         }),
         headers: {'Content-Type': 'application/json'});
-    print("Response Status: ${response.statusCode}");
-    print("Response Body: ${response.body}");
     if (response.statusCode == 200) {
       return List<List<dynamic>>.from(json.decode(response.body));
     } else {
@@ -86,23 +94,30 @@ class IssuesPage extends StatelessWidget {
     }
   }
 
-
   Future<Map<String, dynamic>> _formatDataFindIssues() async {
-    List<List<dynamic>> formattedData = await applyLetterCasing(csvData);
-    formattedData = await applyDateFormat(formattedData);
+    // Apply letter casing
+    List<List<dynamic>> formattedData = await applyLetterCasing(cleanedData);
+
+    // Check if there are any date columns based on classifications
+    bool hasDateColumn = widget.classifications.any((classification) =>
+        classification.contains(3)); // Assuming '3' represents 'date'
+
+    // Only apply date formatting if a date column is present
+    if (hasDateColumn) {
+      formattedData = await applyDateFormat(formattedData);
+    }
+
+    // Detect issues
     Map<String, List<String>> issues = await detectIssues(formattedData);
+
     return {
-      'formattedData': formattedData, 
+      'formattedData': formattedData,
       'issues': issues,
-    }; 
+    };
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
-    // String selectedFormat = dateFormats[0];
     return Scaffold(
       appBar: AppBar(title: Text("Data Sweep - Issues")),
       body: FutureBuilder(
@@ -117,7 +132,7 @@ class IssuesPage extends StatelessWidget {
           }
 
           Map<String, dynamic> result = snapshot.data as Map<String, dynamic>;
-          List<List<dynamic>> cleanedData = result['formattedData'];
+          cleanedData = result['formattedData'];
           Map<String, List<String>> issues = result['issues'];
 
           return SingleChildScrollView(
@@ -141,9 +156,7 @@ class IssuesPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text("Oh no, inconsistencies found!"),
                 const SizedBox(height: 10),
-                // Iterate over all columns to show issues or "No issues found"
-                ...columns.map((column) {
-                  // Check if issues exist for this column
+                ...widget.columns.map((column) {
                   List<String> columnIssues = issues[column] ?? [];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -154,23 +167,14 @@ class IssuesPage extends StatelessWidget {
                           : Text("Issues: ${columnIssues.join(', ')}"),
                       onTap: () async {
                         print("Column value: $column");
-                        int columnIndex = columns.indexOf(column);
-                        print("columns.indexOf(column): $columnIndex");
-                        print("Columns: $columns");
-                        print("Classifications: $classifications");
-
-                        // Correctly access the column classification dynamically
+                        int columnIndex = widget.columns.indexOf(column);
                         List<int> columnClassification =
-                            classifications[columnIndex];
-                        int columnType = columnClassification
-                            .indexOf(1); // Get the classification type index
-                        print("columnType: $columnType");
-
+                            widget.classifications[columnIndex];
+                        int columnType = columnClassification.indexOf(1);
                         List<String> columnIssues = issues[column] ?? [];
 
-                        // Switch case based on the determined column type
                         switch (columnType) {
-                          case 0: // Numerical
+                          case 0:
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -181,50 +185,60 @@ class IssuesPage extends StatelessWidget {
                               ),
                             );
                             break;
-                          case 1: // Categorical
+                          case 1:
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => CategoricalPage(
                                   columnName: column,
-                                  categoricalData: List<String>.from(csvData
-                                      .map((row) => row[columns.indexOf(column)]
-                                          .toString())),
+                                  categoricalData: List<String>.from(
+                                      cleanedData.map((row) =>
+                                          row[widget.columns.indexOf(column)]
+                                              .toString())),
                                   issues: columnIssues,
                                 ),
                               ),
                             );
                             break;
-                          case 2: // Non-categorical
-                            Navigator.push(
+                          case 2:
+                            List<List<dynamic>>? updatedDataset =
+                                await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => NonCategoricalPage(
                                   columnName: column,
                                   issues: columnIssues,
+                                  csvData: cleanedData,
                                 ),
                               ),
                             );
+                            if (updatedDataset != null) {
+                              setState(() {
+                                cleanedData = updatedDataset;
+                              });
+                            }
                             break;
-                          default: //date
-                            
-                            List<List<dynamic>>? updatedDataset = await Navigator.push(context,
+                          default:
+                            List<List<dynamic>>? updatedDataset =
+                                await Navigator.push(
+                              context,
                               MaterialPageRoute(
                                 builder: (context) => DateIssuePage(
                                   columnName: column,
                                   issues: columnIssues,
-                                  csvData: csvData,
-                                  chosenDateFormat: dateFormats,
-                                  chosenColumns: columns,
-                                  chosenClassifications: classifications,
+                                  csvData: cleanedData,
+                                  chosenDateFormat: widget.dateFormats,
+                                  chosenColumns: widget.columns,
+                                  chosenClassifications: widget.classifications,
                                 ),
                               ),
                             );
 
-                            if (updatedDataset != null){
-                              cleanedData = updatedDataset;
+                            if (updatedDataset != null) {
+                              setState(() {
+                                cleanedData = updatedDataset;
+                              });
                             }
-                            
                             break;
                         }
                       },
