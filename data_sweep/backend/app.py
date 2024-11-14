@@ -603,6 +603,62 @@ def reformat_date_route():
         print(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 400
 
+@app.route('/non_categorical_missing_values', methods=['POST'])
+def process_data():
+    print("Non-categorical-missingvlauesss")
+    data = request.json
+    column_name = data.get('column').lower()  # Convert to lowercase
+    action = data.get('action')
+    fill_value = data.get('fillValue')
+    dataset = data.get('data')
+
+    print(f"Column name: {column_name}")
+    print(f"Data Received: {dataset}")
+
+    if not dataset:
+        return jsonify({"error": "No data provided"}), 400
+
+    # Convert dataset to DataFrame, standardizing column names to lowercase
+    df = pd.DataFrame(dataset[1:], columns=[col.lower() for col in dataset[0]]).replace("", np.nan)
+    print(f"DataFrame Columns: {df.columns}")
+
+    if action == "Remove Rows":
+        print("Action: Remove Rows")
+
+        if column_name not in df.columns:
+            print("Column not found")
+            return jsonify({"error": "Column not found"}), 400
+
+        cleaned_df = df.dropna(subset=[column_name])
+        cleaned_df = cleaned_df.where(pd.notnull(cleaned_df), None)
+        cleaned_data = [list(cleaned_df.columns)] + cleaned_df.values.tolist()
+        print(f"Cleaned Data (RemoveRows): {cleaned_data}")
+        return jsonify(cleaned_data)
+
+    elif action == "Fill with":
+        column_index = None
+        if dataset and column_name:
+            header = [col.lower() for col in dataset[0]]
+            if column_name in header:
+                column_index = header.index(column_name)
+
+        if column_index is None:
+            return jsonify({"error": "Column not found"}), 400
+
+        for row in dataset[1:]:
+            if not row[column_index]: 
+                row[column_index] = fill_value 
+
+        print(f"Cleaned Data (Fill with): {dataset}")
+        return jsonify(dataset)
+
+    elif action == "Leave Blank":
+        print(f"Cleaned Data (Leave Blank): {dataset}")
+        return jsonify(dataset)
+
+    else:
+        return jsonify({"error": "Invalid action"}), 400
+
 
 
 if __name__ == '__main__':
