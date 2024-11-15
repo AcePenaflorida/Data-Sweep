@@ -17,9 +17,10 @@ def to_sentence_case(string):
     return string[0].upper() + string[1:].lower()
 
 def apply_letter_casing(data, columns, casing_selections):
+    # Start from the second row (index 1) to skip the header
     for i in range(len(columns)):
         casing = casing_selections[i]
-        for j in range(len(data)):
+        for j in range(1, len(data)):  # Start loop from 1 to skip the header
             value = data[j][i]
             if isinstance(value, str):
                 if casing == 'UPPERCASE':
@@ -32,6 +33,7 @@ def apply_letter_casing(data, columns, casing_selections):
                     data[j][i] = to_sentence_case(value)
     
     return data
+
 
 def is_valid_date(value):
     try:
@@ -421,7 +423,7 @@ def reformat_date_route():
 def process_data():
     print("Non-categorical-missingvlauesss")
     data = request.json
-    column_name = data.get('column').lower()  # Convert to lowercase
+    column_name = data.get('column')  
     action = data.get('action')
     fill_value = data.get('fillValue')
     dataset = data.get('data')
@@ -433,7 +435,7 @@ def process_data():
         return jsonify({"error": "No data provided"}), 400
 
     # Convert dataset to DataFrame, standardizing column names to lowercase
-    df = pd.DataFrame(dataset[1:], columns=[col.lower() for col in dataset[0]]).replace("", np.nan)
+    df = pd.DataFrame(dataset[1:], columns=dataset[0]).replace("", np.nan)
     print(f"DataFrame Columns: {df.columns}")
 
     if action == "Remove Rows":
@@ -481,6 +483,7 @@ def numerical_missing_values():
         action = data.get('action')
         fill_value = data.get('fillValue')
         dataset = data.get('data')
+        print(f"NUMERICAL: {column_name}, FillValue {fill_value}, dataset: {dataset}")
 
         if not dataset or not column_name or not action:
             return jsonify({"error": "Missing required fields"}), 400

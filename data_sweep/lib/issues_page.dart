@@ -1,12 +1,18 @@
+import 'package:csv/csv.dart';
 import 'package:data_sweep/issues/categorical.dart';
 import 'package:data_sweep/issues/numerical.dart';
 import 'package:data_sweep/issues/date.dart';
 import 'package:data_sweep/issues/non_categorical.dart';
+import 'package:data_sweep/main.dart';
+import 'package:data_sweep/outliers_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'preview_page.dart';
 import 'package:data_sweep/config.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
 
 class IssuesPage extends StatefulWidget {
   final List<List<dynamic>> csvData;
@@ -29,6 +35,7 @@ class IssuesPage extends StatefulWidget {
 
 class _IssuesPageState extends State<IssuesPage> {
   late List<List<dynamic>> cleanedData;
+  final _fileNameController = TextEditingController();
 
   @override
   void initState() {
@@ -114,6 +121,126 @@ class _IssuesPageState extends State<IssuesPage> {
       'formattedData': formattedData,
       'issues': issues,
     };
+  }
+
+  Future<void> _downloadCSV() async {
+    // Check storage permission before proceeding
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      // Request permission if not granted
+      await Permission.storage.request();
+      status = await Permission.storage.status;
+    }
+
+    // Proceed only if permission is granted
+    if (status.isGranted) {
+      if (cleanedData.isEmpty) {
+        print('No data available for CSV conversion.');
+        return;
+      }
+
+      List<List<String>> csvFormattedData = cleanedData
+          .map((row) => row.map((item) => item.toString()).toList())
+          .toList();
+
+      if (csvFormattedData.isEmpty || csvFormattedData[0].isEmpty) {
+        print('CSV conversion produced no data.');
+        return;
+      }
+
+      String csvContent = const ListToCsvConverter().convert(csvFormattedData);
+      print('CSV Content generated:\n$csvContent');
+
+      try {
+        // Get the downloads directory path
+        String path = await _getDownloadsDirectoryPath();
+
+        // Create the directory if it doesn't exist
+        Directory directory = Directory(path);
+        if (!await directory.exists()) {
+          await directory.create(recursive: true);
+        }
+
+        // Create the file and write the CSV content
+        String fileName = _fileNameController.text.isNotEmpty
+            ? _fileNameController.text + ".csv"
+            : "cleaned_file.csv"; // Default filename if empty
+
+        File file = File('$path/$fileName');
+        await file.writeAsString(csvContent);
+        await Future.delayed(Duration(seconds: 1));
+
+        print('File saved to: $path'); // Debugging output
+
+        // Show a confirmation to the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('CSV file saved to: $path')),
+        );
+      } catch (e) {
+        print('Error saving the file: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving the file: $e')),
+        );
+      }
+    } else {
+      print('Storage permission not granted');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Storage permission is required to save the file.')),
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Downloaded!"),
+          content: Text("Would you like to do more things, Kimi?"),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OutliersPage(
+                      csvData: cleanedData, // Pass actual csvData
+                      columns: widget.columns, // Pass actual columns
+                      classifications:
+                          widget.classifications, // Pass actual classifications
+                    ),
+                  ),
+                );
+              },
+              child: Text("Go to Outliers"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Navigator.of(context).pop(); // Close dialog
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => FeatureScalingPage(), // Placeholder page
+                //   ),
+                // );
+              },
+              child: Text("Go to Feature Scaling"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<String> _getDownloadsDirectoryPath() async {
+    // Always return the standard Downloads directory path on Android
+    if (Platform.isAndroid && await Permission.storage.request().isGranted) {
+      return '/storage/emulated/0/Download';
+    }
+
+    // Fallback path for other platforms
+    Directory? directory = await getExternalStorageDirectory();
+    return directory!.path;
   }
 
   @override
@@ -211,7 +338,6 @@ class _IssuesPageState extends State<IssuesPage> {
                               ),
                             );
 
-                            print("DATA COLUMN FOR CATEG: ${widget.columns}");
                             if (updatedDataset != null) {
                               cleanedData = updatedDataset;
                             }
@@ -262,6 +388,33 @@ class _IssuesPageState extends State<IssuesPage> {
                     ),
                   );
                 }).toList(),
+                TextField(
+                  controller: _fileNameController,
+                  decoration: InputDecoration(
+                    labelText: "Enter Filename for Download (without .csv)",
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _downloadCSV,
+                  child: Text("Download CSV"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Close the current screen
+                    Navigator.pop(context);
+
+                    // Navigate to the HomePage and remove all previous routes
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                      (Route<dynamic> route) =>
+                          false, // This removes all previous routes
+                    );
+                  },
+                  child: Text("GO BACK TO HOME PAGE"),
+                ),
               ],
             ),
           );

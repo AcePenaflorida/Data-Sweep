@@ -1,4 +1,5 @@
 import 'package:data_sweep/main.dart';
+import 'package:data_sweep/selection_page.dart';
 import 'package:flutter/material.dart';
 import 'issues_page.dart';
 import 'preview_page.dart';
@@ -89,38 +90,6 @@ class _ClassificationPageState extends State<ClassificationPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Data Sweep"),
-        leading: IconButton(
-          icon: Icon(Icons.cancel),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text("Are you sure you want to cancel?"),
-                  actions: <Widget>[
-                    TextButton(
-                      child: Text("Yes"),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomePage()),
-                          (Route<dynamic> route) => false,
-                        );
-                      },
-                    ),
-                    TextButton(
-                      child: Text("No"),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -433,7 +402,7 @@ class _ClassificationPageState extends State<ClassificationPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => IssuesPage(
+                      builder: (context) => SelectionPages(
                         csvData: widget.csvData,
                         columns: columns,
                         classifications: columnClassifications,
