@@ -12,7 +12,7 @@ class CategoricalPage extends StatefulWidget {
   CategoricalPage({
     required this.columnName,
     required this.categoricalData,
-    required this.issues, 
+    required this.issues,
     required this.dataset,
   });
 
@@ -25,13 +25,17 @@ class _CategoricalPageState extends State<CategoricalPage> {
   late List<String> uniqueValues;
   late List<List<dynamic>> _reformattedDataset;
 
-
   @override
   void initState() {
     super.initState();
     _reformattedDataset = widget.dataset;
-    uniqueValues = widget.categoricalData.toSet().toList();// Get unique values from the categorical data
-    textControllers = uniqueValues.map((e) => TextEditingController()).toList();// Initialize the text controllers for each unique value
+    print("DATA COLUMN: ${widget.categoricalData}");
+    uniqueValues = widget.categoricalData
+        .toSet()
+        .toList(); // Get unique values from the categorical data
+    textControllers = uniqueValues
+        .map((e) => TextEditingController())
+        .toList(); // Initialize the text controllers for each unique value
   }
 
   @override
@@ -42,18 +46,18 @@ class _CategoricalPageState extends State<CategoricalPage> {
     super.dispose();
   }
 
-  Future<List<List<dynamic>>> standardizeCategoryValues(List<List<dynamic>> data, standardizedValues) async {
+  Future<List<List<dynamic>>> standardizeCategoryValues(
+      List<List<dynamic>> data, standardizedValues) async {
     print("Function Invoked: standardizeCategoryValues...");
     var uri = Uri.parse('$baseURL/map_categorical_values');
     var response = await http.post(uri,
-      body: json.encode({
-        'data': data,
-        'column': widget.columnName,
-        'unique_values': uniqueValues,
-        'standard_format': standardizedValues,
-      }),
-      headers: {'Content-Type': 'application/json'}
-    );
+        body: json.encode({
+          'data': data,
+          'column': widget.columnName,
+          'unique_values': uniqueValues,
+          'standard_format': standardizedValues,
+        }),
+        headers: {'Content-Type': 'application/json'});
     print("Response Status: ${response.statusCode}");
     print("Response Body: ${response.body}");
     if (response.statusCode == 200) {
@@ -65,7 +69,8 @@ class _CategoricalPageState extends State<CategoricalPage> {
 
   Future<void> resolveStandardization(standardizedValues) async {
     try {
-      List<List<dynamic>> reformattedData = await standardizeCategoryValues(widget.dataset, standardizedValues);
+      List<List<dynamic>> reformattedData =
+          await standardizeCategoryValues(widget.dataset, standardizedValues);
       setState(() {
         _reformattedDataset = reformattedData;
       });
@@ -132,7 +137,8 @@ class _CategoricalPageState extends State<CategoricalPage> {
                                   );
                                 }).toList(),
                                 onChanged: (selectedValue) {
-                                  textControllers[index].text = selectedValue ?? '';
+                                  textControllers[index].text =
+                                      selectedValue ?? '';
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'Select a standard value',
@@ -155,28 +161,28 @@ class _CategoricalPageState extends State<CategoricalPage> {
                 List<String> standardizedValues = textControllers
                     .map((controller) => controller.text)
                     .toList();
-                
+
                 print("Selected Standard: ${standardizedValues}");
-                
+
                 if (standardizedValues.any((value) => value.isEmpty)) {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text("Warning"),
-                          content: Text("Complete Standardization"),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text("OK"),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                }else{
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Warning"),
+                        content: Text("Complete Standardization"),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text("OK"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
                   await resolveStandardization(standardizedValues);
                   Navigator.pop(context, _reformattedDataset);
                 }

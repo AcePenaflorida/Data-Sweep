@@ -69,7 +69,7 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
         );
         return [];
       }
-
+      print('$baseURL');
       var uri = Uri.parse('$baseURL/remove_columns');
 
       var requestBody = {
@@ -83,6 +83,10 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
         headers: {'Content-Type': 'application/json'},
         body: json.encode(requestBody),
       );
+
+      print('POST request sent.');
+
+      print('$response');
 
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);

@@ -314,11 +314,14 @@ class _ClassificationPageState extends State<ClassificationPage> {
                                   : null,
                               items: [
                                 DropdownMenuItem(
-                                    value: "mm/dd/yyyy", child: Text("mm/dd/yyyy")),
+                                    value: "mm/dd/yyyy",
+                                    child: Text("mm/dd/yyyy")),
                                 DropdownMenuItem(
-                                    value: "dd/mm/yyyy", child: Text("dd/mm/yyyy")),
+                                    value: "dd/mm/yyyy",
+                                    child: Text("dd/mm/yyyy")),
                                 DropdownMenuItem(
-                                    value: "yyyy/mm/dd", child: Text("yyyy/mm/dd")),
+                                    value: "yyyy/mm/dd",
+                                    child: Text("yyyy/mm/dd")),
                               ],
                               onChanged: (value) {
                                 setState(() {
@@ -412,7 +415,7 @@ class _ClassificationPageState extends State<ClassificationPage> {
                           columnClassifications[index][2] == 1) {
                         classificationText +=
                             " - ${columnCasingSelections[index]}";
-                      } 
+                      }
                       if (columnClassifications[index][3] == 1) {
                         classificationText += " - ${columnDateFormats[index]}";
                       }
@@ -420,13 +423,13 @@ class _ClassificationPageState extends State<ClassificationPage> {
                     });
                   });
                   print(columnDateFormats);
-                  
+
                   String selectedDateFormat = columnDateFormats.firstWhere(
                     (format) => format.trim().isNotEmpty,
                     orElse: () => '',
-                  ); 
+                  );
                   print("SelectedDateFormat: ${selectedDateFormat}");
-                  
+                  print("CATEGORY TO ISSUE: ${columns}");
                   Navigator.push(
                     context,
                     MaterialPageRoute(
