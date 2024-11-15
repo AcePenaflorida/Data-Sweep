@@ -173,32 +173,49 @@ class _IssuesPageState extends State<IssuesPage> {
                         int columnType = columnClassification.indexOf(1);
                         List<String> columnIssues = issues[column] ?? [];
 
+                        // Switch case based on the determined column type
                         switch (columnType) {
                           case 0:
-                            Navigator.push(
+                            List<List<dynamic>>? updatedDataset =
+                                await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => NumericalIssuePage(
                                   columnName: column,
                                   issues: columnIssues,
+                                  csvData: cleanedData,
                                 ),
                               ),
                             );
+                            if (updatedDataset != null) {
+                              setState(() {
+                                cleanedData = updatedDataset;
+                              });
+                            }
                             break;
-                          case 1:
-                            Navigator.push(
+                          case 1: // Categorical
+                            List<List<dynamic>>? updatedDataset =
+                                await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => CategoricalPage(
+                                  dataset: cleanedData,
                                   columnName: column,
-                                  categoricalData: List<String>.from(
-                                      cleanedData.map((row) =>
+                                  categoricalData: List<String>.from(cleanedData
+                                      .skip(1) // Skip the header row
+                                      .map((row) =>
                                           row[widget.columns.indexOf(column)]
                                               .toString())),
                                   issues: columnIssues,
                                 ),
                               ),
                             );
+
+                            print("DATA COLUMN FOR CATEG: ${widget.columns}");
+                            if (updatedDataset != null) {
+                              cleanedData = updatedDataset;
+                            }
+
                             break;
                           case 2:
                             List<List<dynamic>>? updatedDataset =
@@ -226,7 +243,7 @@ class _IssuesPageState extends State<IssuesPage> {
                                 builder: (context) => DateIssuePage(
                                   columnName: column,
                                   issues: columnIssues,
-                                  csvData: cleanedData,
+                                  dataset: cleanedData,
                                   chosenDateFormat: widget.dateFormats,
                                   chosenColumns: widget.columns,
                                   chosenClassifications: widget.classifications,

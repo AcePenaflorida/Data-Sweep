@@ -420,16 +420,13 @@ class _ClassificationPageState extends State<ClassificationPage> {
                     });
                   });
                   print(columnDateFormats);
-                  String selectedDateFormat;
-                  if (columnDateFormats.length > 2) {
-                    selectedDateFormat = columnDateFormats[2];
-                  } else if (columnDateFormats.length == 2){
-                    selectedDateFormat = columnDateFormats[1];
-                  }
-                  else {
-                    selectedDateFormat = columnDateFormats.isNotEmpty ? columnDateFormats[0] : '';
-                  } 
+                  
+                  String selectedDateFormat = columnDateFormats.firstWhere(
+                    (format) => format.trim().isNotEmpty,
+                    orElse: () => '',
+                  ); 
                   print("SelectedDateFormat: ${selectedDateFormat}");
+                  
                   Navigator.push(
                     context,
                     MaterialPageRoute(

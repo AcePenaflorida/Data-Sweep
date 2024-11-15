@@ -38,46 +38,8 @@ def is_valid_date(value):
         return True
     except ValueError:
         return False
-    
-# def reformat_date(data, date_format):
-#     # Define format mappings for supported date formats
-#     format_mappings = {
-#         'mm/dd/yyyy': '%m/%d/%Y',   # Correct mapping for month/day/year
-#         'dd/mm/yyyy': '%d/%m/%Y',   # Correct mapping for day/month/year
-#         'yyyy/mm/dd': '%Y/%m/%d',   # Correct mapping for year/month/day
-#     }
-#     print(f"reformat_date: {date_format}")
 
-#     # Check if the date format is supported
-#     if date_format not in format_mappings:
-#         raise ValueError(f"Unsupported date format: {date_format}")
-
-#     # Get the datetime format string based on the provided date format
-#     date_format_str = format_mappings[date_format]
-
-#     print(f"Target Format: {date_format_str}")
-
-#     # Iterate over the rows and columns to reformat the dates
-#     for row in data:
-#         for i, value in enumerate(row):
-#             if isinstance(value, str):
-#                 print(f"Original Value: {value}")
-#                 try:
-#                     # Try to parse and reformat the date (assuming the date is in '%Y-%m-%d' format)
-#                     parsed_date = datetime.strptime(value, '%Y-%m-%d')  # Original expected format
-#                     print(f"Parsed Date: {parsed_date}")
-                    
-#                     reformatted_date = parsed_date.strftime(date_format_str)  # Reformat to the target format
-#                     print(f"Reformatted Date: {reformatted_date}")
-
-#                     row[i] = reformatted_date  # Update the row with the reformatted date
-#                 except ValueError as e:
-#                     print(f"Skipping value '{value}' due to error: {e}")
-#                     pass  # Skip if the value can't be parsed as a date
-
-#     return data
-
-def reformat_date(data, date_format):
+def reformat_date(data, date_format, classifications):
     # Define format mappings for supported date formats
     format_mappings = {
         'mm/dd/yyyy': '%m/%d/%Y',
@@ -94,68 +56,39 @@ def reformat_date(data, date_format):
     target_format_str = format_mappings[date_format]
     print(f"Target Format for output: {target_format_str}")
 
-    # Iterate over the rows and columns to reformat the dates
+    # Identify indices of date columns based on classifications
+    date_column_indices = [
+        index for index, classification in enumerate(classifications)
+        if classification[3] == 1  # 1 indicates it's a date column
+    ]
+
+    # Iterate over rows and only process values in date columns
     for row in data:
-        for i, value in enumerate(row):
-            if isinstance(value, str):
-                print(f"Original Value: {value}")
+        for col_index in date_column_indices:
+            value = row[col_index]
+            if isinstance(value, str):  # Ensure it's a string
+                print(f"Original Value in Date Column: {value}")
                 parsed_date = None
 
-                # Try parsing the date using multiple possible formats
+                # Attempt parsing with each available format
                 for fmt in format_mappings.values():
                     try:
                         parsed_date = datetime.strptime(value, fmt)
                         print(f"Parsed Date with format '{fmt}': {parsed_date}")
-                        break  # Stop on first successful parse
+                        break  # Stop if a format successfully parses
                     except ValueError:
-                        continue  # Try the next format if parsing fails
+                        continue  # Continue if parsing fails
 
-                # If parsed successfully, reformat to the target format
+                # Reformat if parsing succeeded
                 if parsed_date:
                     reformatted_date = parsed_date.strftime(target_format_str)
                     print(f"Reformatted Date: {reformatted_date}")
-                    row[i] = reformatted_date
+                    row[col_index] = reformatted_date
                 else:
                     print(f"Skipping value '{value}' due to unrecognized date format.")
 
     return data
 
-# def apply_date_format(data, columns, date_format, classifications):
-#     # Define format mappings for supported date formats
-#     format_mappings = {
-#         'mm/dd/yyyy': '%m/%d/%Y',
-#         'dd/mm/yyyy': '%d/%m/%Y',
-#         'yyyy/mm/dd': '%Y/%m/%d',
-#     }
-
-#     # Check if the date format is supported once outside the loop
-#     # selectedFormat = date_format[2]
-#     if date_format not in format_mappings:
-#         raise ValueError(f"Unsupported date format: {date_format}")
-
-#     # Get the corresponding format string
-#     format_str = format_mappings[date_format]
-#     print(format_str)
-
-#     # Loop over columns and rows to format dates in the specified columns
-#     for i in range(len(columns)):
-#         # Check if the column is classified as a date column
-#         if classifications[i][3] == 1:  # 1 indicates it is a date column
-#             for j in range(len(data)):
-#                 value = data[j][i]
-
-#                 # Ensure the value is a string (only try to parse string dates)
-#                 if isinstance(value, str):
-#                     try:
-#                         # Parse the date assuming the input format is YYYY-MM-DD
-#                         date_obj = datetime.strptime(value, "%Y-%m-%d")
-#                         # Format the date according to the specified format
-#                         data[j][i] = date_obj.strftime(format_str)
-#                     except ValueError:
-#                         # If parsing fails, replace with np.nan
-#                         pass
-
-#     return data
 
 def apply_date_format(data, columns, date_format, classifications):
     # Define format mappings for supported date formats
@@ -286,190 +219,23 @@ def detect_issues(data, columns, classifications):
 
     return issues
 
+def map_categorical_values(data, column, unique_values, standard_format):
+    print("Function Invoked python: map_categorical_values")
+    df = pd.DataFrame(data[1:], columns=data[0])  # First row as header, remaining as data
+    category_mapping = dict(zip(unique_values, standard_format))  # Create a dictionary mapping
+    df[column] = df[column].map(category_mapping)  # Apply mapping to the specified column
+    return [df.columns.tolist()] + df.values.tolist()  # Convert DataFrame back to List<List<dynamic>> format
 
-# def delete_invalid_dates():
-#     data = request.json['data']
-#     date_format = request.json['dateFormat']  # Expected format for valid dates
-
-#     format_mappings = {
-#         'mm/dd/yyyy': '%m/%d/%Y',
-#         'dd/mm/yyyy': '%d/%m/%Y',
-#         'yyyy/mm/dd': '%Y/%m/%d',
-#     }
-
-#     # Map date_format to the correct format string
-#     if date_format not in format_mappings:
-#         return jsonify({"error": f"Unsupported date format: {date_format}"}), 400
-
-#     date_format_str = format_mappings[date_format]
-#     print(f"Target Format: {date_format_str}")
-#     valid_data = []
-
-#     for row in data:
-#         row_valid = True
-#         for value in row:
-#             if isinstance(value, str):
-#                 try:
-#                     parsed_date = datetime.strptime(value, '%Y-%m-%d') 
-#                     print(f"Parsed Date: {parsed_date}")
-#                     reformatted_date = parsed_date.strftime(date_format_str) 
-                    
-#                 except ValueError:
-#                     row_valid = False
-#                     break
-#         if row_valid:
-#             valid_data.append(row)
-
-#     return jsonify(valid_data)
-# @app.route('/delete_invalid_dates', methods=['POST'])
-# def delete_invalid_dates():
-#     data = request.json['data']
-#     date_format = request.json['dateFormat']  # Expected format for valid dates
-#     columns = request.json['columns']
-#     classifications = request.json['classifications']
-#     format_mappings = {
-#         'mm/dd/yyyy': '%m/%d/%Y',
-#         'dd/mm/yyyy': '%d/%m/%Y',
-#         'yyyy/mm/dd': '%Y/%m/%d',
-#     }
-
-#     # Map date_format to the correct format string
-#     if date_format not in format_mappings:
-#         return jsonify({"error": f"Unsupported date format: {date_format}"}), 400
-
-#     date_format_str = format_mappings[date_format]
-#     print(f"Target Format: {date_format_str}")
-
-#     # Assume the first row is the header
-#     header = data[0]
-#     rows = data[1:]  # All rows except the header
-#     valid_data = [header]  # Start valid_data with the header
-
-#     for row in rows:
-#         row_valid = True
-#         for value in row:
-#             if isinstance(value, str):
-#                 try:
-#                     parsed_date = datetime.strptime(value, '%Y-%m-%d') 
-#                     print(f"Parsed Date: {parsed_date}")
-#                     reformatted_date = parsed_date.strftime(date_format_str) 
-#                 except ValueError:
-#                     row_valid = False
-#                     break
-#         if row_valid:
-#             valid_data.append(row)
-
-#     return jsonify(valid_data)
-
-
-# @app.route('/delete_invalid_dates', methods=['POST'])
-# def delete_invalid_dates():
-#     data = request.json['data']
-#     date_format = request.json['dateFormat']  # Expected format for valid dates
-#     classifications = request.json['classifications']
-    
-#     # Define format mappings for supported date formats
-#     format_mappings = {
-#         'mm/dd/yyyy': '%m/%d/%Y',
-#         'dd/mm/yyyy': '%d/%m/%Y',
-#         'yyyy/mm/dd': '%Y/%m/%d',
-#     }
-
-#     # Map date_format to the correct format string
-#     if date_format not in format_mappings:
-#         return jsonify({"error": f"Unsupported date format: {date_format}"}), 400
-
-#     date_format_str = format_mappings[date_format]
-#     print(f"Target Format: {date_format_str}")
-
-#     # Assume the first row is the header
-#     header = data[0]
-#     rows = data[1:]  # All rows except the header
-#     valid_data = [header]  # Start valid_data with the header
-
-#     # Identify indices of date columns based on classifications
-#     date_column_indices = [
-#         index for index, classification in enumerate(classifications)
-#         if classification[3] == 1  # 1 indicates it is a date column
-#     ]
-#     print(f"Date columns indices: {date_column_indices}")
-
-#     for row in rows:
-#         row_valid = True  # Assume row is valid initially
-#         for col_index in date_column_indices:
-#             value = row[col_index]
-#             if isinstance(value, str) and value:  # Ensure it's a non-empty string
-#                 try:
-#                     parsed_date = datetime.strptime(value, '%Y-%m-%d') 
-#                     print(f"Parsed Date: {parsed_date}")
-#                     reformatted_date = parsed_date.strftime(date_format_str) 
-#                 except ValueError:
-#                     print(f"Invalid date found: {value} in row {row}")
-#                     row_valid = False  # Mark row as invalid if parsing fails
-#                     value = ""
-#                     break  # Stop checking further columns in this row
-#         if row_valid:
-#             valid_data.append(row)  # Only add rows that passed the check
-
-#     print(f"Valid data: {valid_data}")
-#     reformat_valid = reformat_date(valid_data, date_format)
-#     return jsonify(reformat_valid)
+@app.route('/map_categorical_values', methods=['POST'])
+def map_categorical_values_route():
+    data = request.json.get('data')
+    column = request.json.get('column')
+    unique_values = request.json.get('unique_values')
+    standard_format = request.json.get('standard_format')
+    result = map_categorical_values(data, column,unique_values, standard_format)
+    return jsonify(result)
 
 @app.route('/delete_invalid_dates', methods=['POST'])
-# def delete_invalid_dates():
-#     data = request.json['data']
-#     date_format = request.json['dateFormat']  # Expected format for valid dates
-#     classifications = request.json['classifications']
-    
-#     # Define format mappings for supported date formats
-#     format_mappings = {
-#         'mm/dd/yyyy': '%m/%d/%Y',
-#         'dd/mm/yyyy': '%d/%m/%Y',
-#         'yyyy/mm/dd': '%Y/%m/%d',
-#     }
-
-#     # Map date_format to the correct format string
-#     if date_format not in format_mappings:
-#         return jsonify({"error": f"Unsupported date format: {date_format}"}), 400
-
-#     # Set the target format string and additional formats to check
-#     target_format_str = format_mappings[date_format]
-#     alternative_formats = list(format_mappings.values())
-
-#     # Assume the first row is the header
-#     header = data[0]
-#     rows = data[1:]  # All rows except the header
-#     valid_data = [header]  # Start valid_data with the header
-
-#     # Identify indices of date columns based on classifications
-#     date_column_indices = [
-#         index for index, classification in enumerate(classifications)
-#         if classification[3] == 1  # 1 indicates it is a date column
-#     ]
-
-#     for row in rows:
-#         row_valid = True  # Assume row is valid initially
-#         for col_index in date_column_indices:
-#             value = row[col_index]
-#             if isinstance(value, str) and value:  # Ensure it's a non-empty string
-#                 valid_date = False
-#                 for fmt in alternative_formats:
-#                     try:
-#                         # Attempt to parse the date with each format
-#                         datetime.strptime(value, fmt)
-#                         valid_date = True
-#                         break
-#                     except ValueError:
-#                         continue
-#                 if not valid_date:
-#                     print(f"Invalid date found: {value} in row {row}")
-#                     row_valid = False  # Mark row as invalid if all attempts fail
-#                     break  # Stop checking further columns in this row
-#         if row_valid:
-#             valid_data.append(row)  # Only add rows that passed the check
-
-#     print(f"Valid data: {valid_data}")
-#     return jsonify(valid_data)
 def delete_invalid_dates():
     data = request.json['data']
     date_format = request.json['dateFormat']  # Expected format for valid dates
@@ -531,7 +297,7 @@ def delete_invalid_dates():
             valid_data.append(row)  # Only add rows that passed the check
 
     print(f"Valid data: {valid_data}")
-    reformat_dates = reformat_date(valid_data, date_format)
+    reformat_dates = reformat_date(valid_data, date_format, classifications)
     return jsonify(reformat_dates)
 
 @app.route('/apply_letter_casing', methods=['POST'])
@@ -595,9 +361,10 @@ def reformat_date_route():
     try:
         data = request.json['data']
         date_formats = request.json['dateFormats']
+        classifications = request.json['classifications']
         print(f"Received data: {data}")
         print(f"Received dateFormats: {date_formats}")
-        result = reformat_date(data, date_formats)  # Assuming you want the first date format
+        result = reformat_date(data, date_formats, classifications)  # Assuming you want the first date format
         return jsonify(result)
     except Exception as e:
         print(f"Error processing request: {e}")
