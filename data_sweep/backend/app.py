@@ -244,8 +244,8 @@ def map_categorical_values(data, column, unique_values, standard_format):
     data_rows = data[1:] if len(data) > 1 else []
 
     # Convert headers and target column name to uppercase for consistency
-    headers = [header.upper() for header in headers]
-    column = column.upper()
+    headers = [header for header in headers]
+    column = column
 
     # Create the DataFrame with uppercase column names
     df = pd.DataFrame(data_rows, columns=headers)
@@ -377,6 +377,9 @@ def outliers_graph():
     task = request.json.get('task')
     method = request.json.get('method')
     df = pd.DataFrame(data[1:], columns=data[0])
+    print(f"column_name: {column_name}")
+    print(f"data: {data}")
+    
 
     outlier_detection_method = choose_outlier_detection_method(df, column_name)
 
@@ -395,7 +398,32 @@ def outliers_graph():
     
     return send_file(img, mimetype='image/png', as_attachment=True, download_name='outliers.png')
 
+@app.route('/get_cleaned_file', methods=['POST'])
+def get_cleaned_file():
+    data = request.json.get('data')
+    column_name = request.json.get('column_name')
+    task = request.json.get('task')
+    method = request.json.get('method')
 
+    # Convert the incoming data to a DataFrame
+    df = pd.DataFrame(data[1:], columns=data[0])
+    outlier_detection_method = choose_outlier_detection_method(df, column_name)
+
+    # Check if task is "Resolve Outliers" and method is "Remove"
+    if task == "Resolve Outliers" and method == "Remove":
+        outliers_count = 1  # Initial value to ensure the loop runs at least once
+        filtered_outliers = df.copy()  # Start with the entire dataset
+
+        while outliers_count != 0:
+            filtered_outliers = filter_outliers_by_z_score(filtered_outliers, column_name)
+            # We don't need to count outliers explicitly anymore
+            outliers_count = filtered_outliers[column_name].isnull().sum()  # A simple check for removed values
+
+    # Convert cleaned data to a list of lists (for JSON serialization)
+    cleaned_data = filtered_outliers.values.tolist()
+    
+    # Return the cleaned data as JSON
+    return jsonify(cleaned_data)
 
 
 
@@ -564,25 +592,22 @@ def process_data():
     fill_value = data.get('fillValue')
     dataset = data.get('data')
 
-    print(f"Column name: {column_name}")
-    print(f"Data Received: {dataset}")
-
     if not dataset:
         return jsonify({"error": "No data provided"}), 400
 
-    # Convert dataset to DataFrame, standardizing column names to lowercase
     df = pd.DataFrame(dataset[1:], columns=dataset[0]).replace("", np.nan)
     print(f"DataFrame Columns: {df.columns}")
 
     if action == "Remove Rows":
         print("Action: Remove Rows")
+        print(f"DataFrame Columns: {df.columns}")
 
         if column_name not in df.columns:
             print("Column not found")
             return jsonify({"error": "Column not found"}), 400
 
         cleaned_df = df.dropna(subset=[column_name])
-        cleaned_df = cleaned_df.where(pd.notnull(cleaned_df), None)
+        cleaned_df = cleaned_df.applymap(lambda x: "" if pd.isna(x) else x)
         cleaned_data = [list(cleaned_df.columns)] + cleaned_df.values.tolist()
         print(f"Cleaned Data (RemoveRows): {cleaned_data}")
         return jsonify(cleaned_data)
@@ -590,14 +615,15 @@ def process_data():
     elif action == "Fill with":
         column_index = None
         if dataset and column_name:
-            header = [col.lower() for col in dataset[0]]
+            header = [col for col in dataset[0]]
             if column_name in header:
                 column_index = header.index(column_name)
-
+                
         if column_index is None:
             return jsonify({"error": "Column not found"}), 400
-
+        print(f"column_index: {column_index}")
         for row in dataset[1:]:
+            print(f"fill_value: {fill_value}")
             if not row[column_index]: 
                 row[column_index] = fill_value 
 

@@ -1,5 +1,4 @@
 import 'package:data_sweep/outliers.dart';
-import 'package:data_sweep/outliers.dart';
 import 'package:flutter/material.dart';
 import 'issues_page.dart';
 

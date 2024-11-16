@@ -128,19 +128,26 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
           Text("Uploaded file: ${basename(widget.filePath)}"),
           const Text(
               "Before we dive deeper, let’s tidy up your dataset. Do you want to remove any unnecessary columns?"),
-          Column(
-            children: List.generate(columns.length, (index) {
-              return CheckboxListTile(
-                title: Text(columns[index]),
-                value: selectedColumns[index],
-                onChanged: (bool? value) {
-                  setState(() {
-                    selectedColumns[index] = value!;
-                  });
-                },
-              );
-            }),
+
+          // Wrap this Column inside a SingleChildScrollView
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: List.generate(columns.length, (index) {
+                  return CheckboxListTile(
+                    title: Text(columns[index]),
+                    value: selectedColumns[index],
+                    onChanged: (bool? value) {
+                      setState(() {
+                        selectedColumns[index] = value!;
+                      });
+                    },
+                  );
+                }),
+              ),
+            ),
           ),
+
           ElevatedButton(
             onPressed: () async {
               List<List<dynamic>> updatedCsvData = await deleteColumns();

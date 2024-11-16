@@ -136,8 +136,9 @@ class _CategoricalPageState extends State<CategoricalPage> {
                                     child: Text(value),
                                   );
                                 }).toList(),
-                                onChanged: (selectedValue) { 
-                                  textControllers[index].text = selectedValue ?? '';
+                                onChanged: (selectedValue) {
+                                  textControllers[index].text =
+                                      selectedValue ?? '';
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'Select a standard value',

@@ -1,7 +1,5 @@
-import 'package:data_sweep/main.dart';
 import 'package:data_sweep/selection_page.dart';
 import 'package:flutter/material.dart';
-import 'issues_page.dart';
 import 'preview_page.dart';
 
 class ClassificationPage extends StatefulWidget {

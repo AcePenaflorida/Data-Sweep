@@ -127,12 +127,10 @@ class _IssuesPageState extends State<IssuesPage> {
     // Check storage permission before proceeding
     var status = await Permission.storage.status;
     if (!status.isGranted) {
-      // Request permission if not granted
       await Permission.storage.request();
       status = await Permission.storage.status;
     }
 
-    // Proceed only if permission is granted
     if (status.isGranted) {
       if (cleanedData.isEmpty) {
         print('No data available for CSV conversion.');
@@ -152,27 +150,23 @@ class _IssuesPageState extends State<IssuesPage> {
       print('CSV Content generated:\n$csvContent');
 
       try {
-        // Get the downloads directory path
         String path = await _getDownloadsDirectoryPath();
 
-        // Create the directory if it doesn't exist
         Directory directory = Directory(path);
         if (!await directory.exists()) {
           await directory.create(recursive: true);
         }
 
-        // Create the file and write the CSV content
         String fileName = _fileNameController.text.isNotEmpty
             ? _fileNameController.text + ".csv"
-            : "cleaned_file.csv"; // Default filename if empty
+            : "cleaned_file.csv";
 
         File file = File('$path/$fileName');
         await file.writeAsString(csvContent);
         await Future.delayed(Duration(seconds: 1));
 
-        print('File saved to: $path'); // Debugging output
+        print('File saved to: $path');
 
-        // Show a confirmation to the user
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('CSV file saved to: $path')),
         );
@@ -204,10 +198,9 @@ class _IssuesPageState extends State<IssuesPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => OutliersPage(
-                      csvData: cleanedData, // Pass actual csvData
-                      columns: widget.columns, // Pass actual columns
-                      classifications:
-                          widget.classifications, // Pass actual classifications
+                      csvData: cleanedData,
+                      columns: widget.columns,
+                      classifications: widget.classifications,
                     ),
                   ),
                 );
@@ -225,6 +218,18 @@ class _IssuesPageState extends State<IssuesPage> {
                 // );
               },
               child: Text("Go to Feature Scaling"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to Home page
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomePage()),
+                  (Route<dynamic> route) => false, // Remove all previous routes
+                );
+              },
+              child: Text("Go to Home"),
             ),
           ],
         );
@@ -339,7 +344,9 @@ class _IssuesPageState extends State<IssuesPage> {
                             );
 
                             if (updatedDataset != null) {
-                              cleanedData = updatedDataset;
+                              setState(() {
+                                cleanedData = updatedDataset;
+                              });
                             }
 
                             break;
@@ -395,17 +402,41 @@ class _IssuesPageState extends State<IssuesPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _downloadCSV,
                   child: Text("Download CSV"),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Close the current screen
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OutliersPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text("Go to Outliers"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigator.of(context).pop(); // Close dialog
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => FeatureScalingPage(), // Placeholder page
+                    //   ),
+                    // );
+                  },
+                  child: Text("Go to Feature Scaling"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
                     Navigator.pop(context);
-
-                    // Navigate to the HomePage and remove all previous routes
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (context) => HomePage()),
@@ -413,7 +444,7 @@ class _IssuesPageState extends State<IssuesPage> {
                           false, // This removes all previous routes
                     );
                   },
-                  child: Text("GO BACK TO HOME PAGE"),
+                  child: Text("Go to Upload Page"),
                 ),
               ],
             ),
