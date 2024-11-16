@@ -70,7 +70,7 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
         );
         return [];
       }
-
+      print('$baseURL');
       var uri = Uri.parse('$baseURL/remove_columns');
 
       var requestBody = {
@@ -84,6 +84,10 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
         headers: {'Content-Type': 'application/json'},
         body: json.encode(requestBody),
       );
+
+      print('POST request sent.');
+
+      print('$response');
 
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);
@@ -103,34 +107,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Data Sweep"),
-        leading: IconButton(
-          icon: const Icon(Icons.cancel),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text("Are you sure you want to cancel?"),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text("Yes"),
-                      onPressed: () {
-                        Navigator.pop(context); // Close dialog
-                        Navigator.pop(context); // Go back to homepage
-                      },
-                    ),
-                    TextButton(
-                      child: const Text("No"),
-                      onPressed: () {
-                        Navigator.pop(context); // Close dialog
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.remove_red_eye),

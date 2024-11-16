@@ -21,11 +21,14 @@ class PreviewPage extends StatelessWidget {
                 scrollDirection: Axis.vertical,
                 child: DataTable(
                   columns: csvData.first
-                      .map((column) => DataColumn(label: Text(column.toString())))
+                      .map((column) =>
+                          DataColumn(label: Text(column.toString())))
                       .toList(),
                   rows: csvData.skip(1).map((row) {
                     return DataRow(
-                      cells: row.map((cell) => DataCell(Text(cell.toString()))).toList(),
+                      cells: row
+                          .map((cell) => DataCell(Text(cell.toString())))
+                          .toList(),
                     );
                   }).toList(),
                 ),

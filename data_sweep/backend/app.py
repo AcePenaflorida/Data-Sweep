@@ -23,9 +23,10 @@ def to_sentence_case(string):
     return string[0].upper() + string[1:].lower()
 
 def apply_letter_casing(data, columns, casing_selections):
+    # Start from the second row (index 1) to skip the header
     for i in range(len(columns)):
         casing = casing_selections[i]
-        for j in range(len(data)):
+        for j in range(1, len(data)):  # Start loop from 1 to skip the header
             value = data[j][i]
             if isinstance(value, str):
                 if casing == 'UPPERCASE':
@@ -38,6 +39,7 @@ def apply_letter_casing(data, columns, casing_selections):
                     data[j][i] = to_sentence_case(value)
     
     return data
+
 
 def is_valid_date(value):
     try:
@@ -226,11 +228,48 @@ def detect_issues(data, columns, classifications):
     return issues
 
 def map_categorical_values(data, column, unique_values, standard_format):
-    print("Function Invoked python: map_categorical_values")
-    df = pd.DataFrame(data[1:], columns=data[0])  # First row as header, remaining as data
-    category_mapping = dict(zip(unique_values, standard_format))  # Create a dictionary mapping
-    df[column] = df[column].map(category_mapping)  # Apply mapping to the specified column
-    return [df.columns.tolist()] + df.values.tolist()  # Convert DataFrame back to List<List<dynamic>> format
+    print("Function Invoked: map_categorical_values")
+    
+    # Print the inputs received
+    print(f"Data received: {data}")
+    print(f"Column to map: {column}")
+    print(f"Unique values received: {unique_values}")
+    print(f"Standard format provided: {standard_format}")
+
+    # Prepare the data for DataFrame creation
+    headers = data[0] if isinstance(data[0], list) else []
+    data_rows = data[1:] if len(data) > 1 else []
+
+    # Convert headers and target column name to uppercase for consistency
+    headers = [header.upper() for header in headers]
+    column = column.upper()
+
+    # Create the DataFrame with uppercase column names
+    df = pd.DataFrame(data_rows, columns=headers)
+    print("DataFrame created from input data with uppercase column names:")
+    print(df)
+
+    # Create the mapping dictionary and print it
+    category_mapping = dict(zip(unique_values, standard_format))
+    print("Category mapping dictionary created:")
+    print(category_mapping)
+
+    # Apply mapping if the column exists in the DataFrame
+    if column in df.columns:
+        df[column] = df[column].map(category_mapping)
+        print(f"DataFrame after applying mapping to column '{column}':")
+    else:
+        print(f"Error: Column '{column}' not found in DataFrame.")
+    
+    print(df)
+
+    # Prepare the result for returning and print it
+    result = [df.columns.tolist()] + df.values.tolist()
+    print("Final result to be returned:")
+    print(result)
+
+    return result
+
 
 # def plot_boxen_with_outliers(df, column):
 #     # Calculate IQR and outlier thresholds
@@ -407,7 +446,17 @@ def map_categorical_values_route():
     column = request.json.get('column')
     unique_values = request.json.get('unique_values')
     standard_format = request.json.get('standard_format')
-    result = map_categorical_values(data, column,unique_values, standard_format)
+
+    # Debugging print statements for each variable
+    print(f"Data received: {data}")
+    print(f"Column received: {column}")
+    print(f"Unique values received: {unique_values}")
+    print(f"Standard format received: {standard_format}")
+
+    # Call the mapping function and print the result for debugging
+    result = map_categorical_values(data, column, unique_values, standard_format)
+    print(f"Result of mapping: {result}")
+
     return jsonify(result)
 
 @app.route('/delete_invalid_dates', methods=['POST'])
@@ -502,8 +551,7 @@ def detect_issues_route():
 
 @app.route('/remove_columns', methods=['POST'])
 def remove_columns():
-    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    print(f"Request received from IP: {client_ip}")
+    print('REMOVE COLUMNS')
     try:
         data = request.json.get('data')
         columns = request.json.get('columns')
@@ -545,8 +593,119 @@ def reformat_date_route():
         print(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 400
 
+@app.route('/non_categorical_missing_values', methods=['POST'])
+def process_data():
+    print("Non-categorical-missingvlauesss")
+    data = request.json
+    column_name = data.get('column')  
+    action = data.get('action')
+    fill_value = data.get('fillValue')
+    dataset = data.get('data')
 
+    print(f"Column name: {column_name}")
+    print(f"Data Received: {dataset}")
 
+    if not dataset:
+        return jsonify({"error": "No data provided"}), 400
+
+    # Convert dataset to DataFrame, standardizing column names to lowercase
+    df = pd.DataFrame(dataset[1:], columns=dataset[0]).replace("", np.nan)
+    print(f"DataFrame Columns: {df.columns}")
+
+    if action == "Remove Rows":
+        print("Action: Remove Rows")
+
+        if column_name not in df.columns:
+            print("Column not found")
+            return jsonify({"error": "Column not found"}), 400
+
+        cleaned_df = df.dropna(subset=[column_name])
+        cleaned_df = cleaned_df.where(pd.notnull(cleaned_df), None)
+        cleaned_data = [list(cleaned_df.columns)] + cleaned_df.values.tolist()
+        print(f"Cleaned Data (RemoveRows): {cleaned_data}")
+        return jsonify(cleaned_data)
+
+    elif action == "Fill with":
+        column_index = None
+        if dataset and column_name:
+            header = [col.lower() for col in dataset[0]]
+            if column_name in header:
+                column_index = header.index(column_name)
+
+        if column_index is None:
+            return jsonify({"error": "Column not found"}), 400
+
+        for row in dataset[1:]:
+            if not row[column_index]: 
+                row[column_index] = fill_value 
+
+        print(f"Cleaned Data (Fill with): {dataset}")
+        return jsonify(dataset)
+
+    elif action == "Leave Blank":
+        print(f"Cleaned Data (Leave Blank): {dataset}")
+        return jsonify(dataset)
+
+    else:
+        return jsonify({"error": "Invalid action"}), 400
+
+@app.route('/numerical_missing_values', methods=['POST'])
+def numerical_missing_values():
+    try:
+        data = request.json
+        column_name = data.get('column')
+        action = data.get('action')
+        fill_value = data.get('fillValue')
+        dataset = data.get('data')
+        print(f"NUMERICAL: {column_name}, FillValue {fill_value}, dataset: {dataset}")
+
+        if not dataset or not column_name or not action:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Convert dataset to DataFrame
+        df = pd.DataFrame(dataset[1:], columns=dataset[0])
+        df[column_name] = pd.to_numeric(df[column_name], errors='coerce')  # Convert column to numeric, non-numeric to NaN
+
+        # Calculate mean, median, and mode ignoring NaN values
+        mean_value = df[column_name].mean()
+        median_value = df[column_name].median()
+        try:
+            mode_value = mode(df[column_name].dropna())
+        except StatisticsError:
+            mode_value = None  # Handle case where mode cannot be determined
+
+        print(f"Mean: {mean_value}, Median: {median_value}, Mode: {mode_value}")
+
+        # Handle the selected action
+        if action == "Fill/Replace with Mean":
+            df[column_name] = df[column_name].fillna(mean_value)
+        elif action == "Fill/Replace with Median":
+            df[column_name] = df[column_name].fillna(median_value)
+        elif action == "Fill/Replace with Mode" and mode_value is not None:
+            df[column_name] = df[column_name].fillna(mode_value)
+        elif action == "Fill/Replace with Custom Value":
+            try:
+                custom_value = float(fill_value)
+                df[column_name] = df[column_name].fillna(custom_value)
+            except ValueError:
+                return jsonify({"error": "Custom value must be a numeric value"}), 400
+        elif action == "Remove Rows":
+            df = df.dropna(subset=[column_name])
+        elif action == "Leave Blank":
+            # Do nothing, leave the values as they are
+            pass
+        else:
+            return jsonify({"error": "Invalid action"}), 400
+
+        # Replace NaN with None for JSON serialization
+        cleaned_data = [list(df.columns)] + df.where(pd.notnull(df), None).values.tolist()
+
+        return jsonify(cleaned_data)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    
 if __name__ == '__main__':
     # Set host to 0.0.0.0 to make it accessible on the network, port to 5000
     app.run(host='0.0.0.0', port=5000, debug=True)

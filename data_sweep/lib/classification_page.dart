@@ -1,4 +1,5 @@
 import 'package:data_sweep/main.dart';
+import 'package:data_sweep/selection_page.dart';
 import 'package:flutter/material.dart';
 import 'issues_page.dart';
 import 'preview_page.dart';
@@ -89,38 +90,6 @@ class _ClassificationPageState extends State<ClassificationPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Data Sweep"),
-        leading: IconButton(
-          icon: Icon(Icons.cancel),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text("Are you sure you want to cancel?"),
-                  actions: <Widget>[
-                    TextButton(
-                      child: Text("Yes"),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomePage()),
-                          (Route<dynamic> route) => false,
-                        );
-                      },
-                    ),
-                    TextButton(
-                      child: Text("No"),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -314,11 +283,14 @@ class _ClassificationPageState extends State<ClassificationPage> {
                                   : null,
                               items: [
                                 DropdownMenuItem(
-                                    value: "mm/dd/yyyy", child: Text("mm/dd/yyyy")),
+                                    value: "mm/dd/yyyy",
+                                    child: Text("mm/dd/yyyy")),
                                 DropdownMenuItem(
-                                    value: "dd/mm/yyyy", child: Text("dd/mm/yyyy")),
+                                    value: "dd/mm/yyyy",
+                                    child: Text("dd/mm/yyyy")),
                                 DropdownMenuItem(
-                                    value: "yyyy/mm/dd", child: Text("yyyy/mm/dd")),
+                                    value: "yyyy/mm/dd",
+                                    child: Text("yyyy/mm/dd")),
                               ],
                               onChanged: (value) {
                                 setState(() {
@@ -412,7 +384,7 @@ class _ClassificationPageState extends State<ClassificationPage> {
                           columnClassifications[index][2] == 1) {
                         classificationText +=
                             " - ${columnCasingSelections[index]}";
-                      } 
+                      }
                       if (columnClassifications[index][3] == 1) {
                         classificationText += " - ${columnDateFormats[index]}";
                       }
@@ -420,17 +392,17 @@ class _ClassificationPageState extends State<ClassificationPage> {
                     });
                   });
                   print(columnDateFormats);
-                  
+
                   String selectedDateFormat = columnDateFormats.firstWhere(
                     (format) => format.trim().isNotEmpty,
                     orElse: () => '',
-                  ); 
+                  );
                   print("SelectedDateFormat: ${selectedDateFormat}");
-                  
+                  print("CATEGORY TO ISSUE: ${columns}");
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => IssuesPage(
+                      builder: (context) => SelectionPages(
                         csvData: widget.csvData,
                         columns: columns,
                         classifications: columnClassifications,
