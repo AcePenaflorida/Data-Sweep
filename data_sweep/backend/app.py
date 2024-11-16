@@ -1,9 +1,16 @@
 import traceback
 from flask import Flask, request, jsonify, send_file
+import matplotlib
 import pandas as pd
 import numpy as np
 import io
+import seaborn as sns
+import matplotlib.pyplot as plt
+matplotlib.use('Agg')
 from datetime import datetime
+from scipy.stats import zscore
+from sklearn.ensemble import IsolationForest
+from sklearn.neighbors import LocalOutlierFactor
 
 app = Flask(__name__)
 
@@ -88,7 +95,6 @@ def reformat_date(data, date_format, classifications):
                     print(f"Skipping value '{value}' due to unrecognized date format.")
 
     return data
-
 
 def apply_date_format(data, columns, date_format, classifications):
     # Define format mappings for supported date formats
@@ -225,6 +231,175 @@ def map_categorical_values(data, column, unique_values, standard_format):
     category_mapping = dict(zip(unique_values, standard_format))  # Create a dictionary mapping
     df[column] = df[column].map(category_mapping)  # Apply mapping to the specified column
     return [df.columns.tolist()] + df.values.tolist()  # Convert DataFrame back to List<List<dynamic>> format
+
+# def plot_boxen_with_outliers(df, column):
+#     # Calculate IQR and outlier thresholds
+#     q1 = df[column].quantile(0.25)
+#     q3 = df[column].quantile(0.75)
+#     iqr = q3 - q1
+#     outlier_threshold_lower = q1 - 1.5 * iqr
+#     outlier_threshold_upper = q3 + 1.5 * iqr
+
+#     # Separate normal data and outliers
+#     normal_data = df[(df[column] >= outlier_threshold_lower) & (df[column] <= outlier_threshold_upper)]
+#     outliers = df[(df[column] < outlier_threshold_lower) | (df[column] > outlier_threshold_upper)]
+
+#     # Calculate the size and spacing based on the number of data points
+#     num_points = len(df)
+#     point_size = 10 if num_points > 500 else 30  # Smaller points for larger datasets
+#     fig_width = 10 if num_points > 500 else 5     # Larger figure for larger datasets
+
+#     # Plot boxen plot
+#     plt.figure(figsize=(fig_width, 6))
+#     sns.boxenplot(data=df, x=column, color="green", showfliers=False)
+
+#     # Overlay normal data points in blue and outliers in red
+#     sns.scatterplot(data=normal_data, x=column, y=[0] * len(normal_data), color='blue', s=point_size, label='Normal Data')
+#     sns.scatterplot(data=outliers, x=column, y=[0] * len(outliers), color='red', s=point_size * 1.5, label='Outliers')
+
+#     # Set x-axis to logarithmic scale
+#     plt.xscale('log')
+
+#     # Set title with number of elements, and add a legend
+#     plt.title(f'Boxenplot for {column} (Total: {num_points} values, {len(outliers)} outliers)')
+#     plt.legend()
+
+#     # Save the plot to a BytesIO object and return it
+#     img = io.BytesIO()
+#     plt.savefig(img, format='png')
+#     img.seek(0)
+#     plt.close()  # Close the plot to free memory
+#     return img
+
+
+def calculate_iqr_thresholds(series):
+    q1 = series.quantile(0.25)
+    q3 = series.quantile(0.75)
+    iqr = q3 - q1
+    outlier_threshold_lower = q1 - 1.5 * iqr
+    outlier_threshold_upper = q3 + 1.5 * iqr
+    return outlier_threshold_lower, outlier_threshold_upper
+
+
+def choose_outlier_detection_method(df, column):
+    skewness = df[column].skew()
+    is_normal = abs(skewness) < 0.5
+    is_high_dimensional = len(df.columns) > 10
+    is_clustered = len(np.unique(df[column])) > 10
+
+    if is_normal:
+        print("Data is normally distributed. Using Z-score for outlier detection.")
+        return 'Z-score'
+    elif not is_normal and not is_high_dimensional:
+        print("Data is skewed. Using IQR for outlier detection.")
+        return 'IQR'
+    elif is_high_dimensional:
+        print("Data is high-dimensional. Using Isolation Forest for outlier detection.")
+        return 'Isolation Forest'
+    elif is_clustered:
+        print("Data has clusters. Using Local Outlier Factor (LOF) for outlier detection.")
+        return 'LOF'
+    else:
+        print("Using default method: IQR.")
+        return 'IQR'
+
+def choose_xscale(df, column):
+    # Count the number of data points
+    num_points = df[column].count()
+    data_range = df[column].max() - df[column].min()
+    
+    # Check if the data contains negative or zero values
+    has_negatives = (df[column] < 0).any()
+    has_zeros = (df[column] == 0).any()
+
+    # Decide on the scale based on dataset size and properties
+    if has_negatives:
+        # Use 'symlog' if there are negative values
+        return 'symlog'
+    elif has_zeros:
+        # Avoid 'log' if there are zeros
+        return 'symlog' if num_points > 500 else 'linear'
+    else:
+        # Use 'log' if the data spans several orders of magnitude and no zeros/negatives
+        if data_range > 1000 and num_points > 100:
+            return 'log'
+        # For small data ranges or small dataset sizes, use 'linear'
+        return 'linear' if num_points < 100 else 'log'
+    
+def plot_boxen_with_outliers(df, column, method):
+    if method == 'Z-score':
+        z_scores = zscore(df[column])
+        outliers = df[np.abs(z_scores) > 3]
+    elif method == 'IQR':
+        lower_limit, upper_limit = calculate_iqr_thresholds(df[column])
+        outliers = df[(df[column] < lower_limit) | (df[column] > upper_limit)]
+    elif method == 'Isolation Forest':
+        model = IsolationForest()
+        outlier_preds = model.fit_predict(df[[column]])
+        outliers = df[outlier_preds == -1]
+    elif method == 'LOF':
+        model = LocalOutlierFactor()
+        outlier_preds = model.fit_predict(df[[column]])
+        outliers = df[outlier_preds == -1]
+
+    normal_data = df[~df.index.isin(outliers.index)]
+    num_points = len(df)
+    point_size = 10 if num_points > 500 else 30
+    fig_width = 10 if num_points > 500 else 5
+
+    plt.figure(figsize=(fig_width, 6))
+    sns.boxenplot(data=df, x=column, color="green", showfliers=False)
+    sns.scatterplot(data=normal_data, x=column, y=[0] * len(normal_data), color='blue', s=point_size, label='Normal Data')
+    sns.scatterplot(data=outliers, x=column, y=[0] * len(outliers), color='red', s=point_size * 1.5, label='Outliers')
+
+    scale = choose_xscale(df, column)
+    plt.xscale(scale)
+
+    plt.title(f'{scale.upper()} Scale Plot for {column} (Total: {num_points} values, {len(outliers)} outliers)')
+
+    # Save the plot to a BytesIO object and return it
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()  # Close the plot to free memory
+    return img, len(outliers)
+
+def filter_outliers_by_z_score(df, column):
+    lower_limit, upper_limit = calculate_iqr_thresholds(df[column])
+    new_df = df.loc[(df[column] < upper_limit) & (df[column] > lower_limit)]
+    return new_df
+
+@app.route('/outliers_graph', methods=['POST'])
+def outliers_graph():
+    data = request.json.get('data')
+    column_name = request.json.get('column_name')
+    task = request.json.get('task')
+    method = request.json.get('method')
+    df = pd.DataFrame(data[1:], columns=data[0])
+
+    outlier_detection_method = choose_outlier_detection_method(df, column_name)
+
+    if(task == "Show Outliers" and method == ""):
+        img, outliers_count = plot_boxen_with_outliers(df, column_name, outlier_detection_method)
+        print(f"Outliers: {outliers_count}")
+        
+    elif(task == "Resolve Outliers"):
+        if method == "Remove":
+            outliers_count = 1  # Initial value to ensure the loop runs at least once
+            filtered_outliers = df.copy()  # Start with the entire dataset
+
+            while outliers_count != 0:
+                filtered_outliers = filter_outliers_by_z_score(filtered_outliers, column_name)
+                img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
+    
+    return send_file(img, mimetype='image/png', as_attachment=True, download_name='outliers.png')
+
+
+
+
+
+    
+
 
 @app.route('/map_categorical_values', methods=['POST'])
 def map_categorical_values_route():

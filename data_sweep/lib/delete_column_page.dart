@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:data_sweep/config.dart'; // to get ip
 import 'package:csv/csv.dart';
 import 'package:data_sweep/classification_page.dart';
+import 'package:data_sweep/outliers.dart';
 import 'package:data_sweep/preview_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -182,9 +183,9 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                   // ignore: use_build_context_synchronously
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ClassificationPage(
+                    builder: (context) => OutliersPage(
                       csvData: updatedCsvData, // Pass the cleaned CSV data
-                      fileName: basename(widget.filePath), // Pass the file name
+                      // fileName: basename(widget.filePath), // Pass the file name
                     ),
                   ),
                 );
@@ -205,9 +206,9 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ClassificationPage(
+                  builder: (context) => OutliersPage(
                     csvData: csvData, // Pass the original CSV data
-                    fileName: basename(widget.filePath), // Pass the file name
+                    // fileName: basename(widget.filePath), // Pass the file name
                   ),
                 ),
               );
