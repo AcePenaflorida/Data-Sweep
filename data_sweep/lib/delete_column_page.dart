@@ -183,9 +183,9 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                   // ignore: use_build_context_synchronously
                   context,
                   MaterialPageRoute(
-                    builder: (context) => OutliersPage(
+                    builder: (context) => ClassificationPage(
                       csvData: updatedCsvData, // Pass the cleaned CSV data
-                      // fileName: basename(widget.filePath), // Pass the file name
+                      fileName: basename(widget.filePath), // Pass the file name
                     ),
                   ),
                 );
@@ -206,9 +206,9 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => OutliersPage(
+                  builder: (context) => ClassificationPage(
                     csvData: csvData, // Pass the original CSV data
-                    // fileName: basename(widget.filePath), // Pass the file name
+                    fileName: basename(widget.filePath), // Pass the file name
                   ),
                 ),
               );
