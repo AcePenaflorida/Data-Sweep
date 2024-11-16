@@ -6,9 +6,13 @@ import 'package:http/http.dart' as http;
 
 class OutliersPage extends StatefulWidget {
   final List<List<dynamic>> csvData;
+  final List<String> columns;
+  final List<List<int>> classifications;
 
   const OutliersPage({
     required this.csvData,
+    required this.columns, //
+    required this.classifications,
   });
 
   @override
@@ -17,8 +21,10 @@ class OutliersPage extends StatefulWidget {
 
 class _OutliersPageState extends State<OutliersPage> {
   late List<TextEditingController> textControllers;
-  late List<String> handleOutliersOptions = ['Remove Rows', 'Cap and Floor', 'Replace with Mean', 'Replace with '];
-  List<String> numericalColumns = ['Age']; // Sample data
+  late List<String> handleOutliersOptions = ['Remove Rows', 'Cap and Floor', 'Replace with Mean', 'Replace with Median'];
+  // List<String> numericalColumns = ['Age']; // Sample data
+  late List<String> numericalColumns = getNumericalColumns();
+
   String outlierStatus = ""; // Resolved or Not Resolved
   bool isLoading = false;
   Uint8List? imageBytes;
@@ -36,6 +42,16 @@ class _OutliersPageState extends State<OutliersPage> {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  List<String> getNumericalColumns() {
+    List<String> numericalColumns = [];
+    for (int i = 0; i < widget.classifications.length; i++) {
+      if (widget.classifications[i][0] == 1) {
+        numericalColumns.add(widget.columns[i]);
+      }
+    }
+    return numericalColumns;
   }
 
   void showGraphOverlay(BuildContext context, String columnName, String outlierStatus, String resolveOutlierMethod) async {
@@ -106,67 +122,72 @@ class _OutliersPageState extends State<OutliersPage> {
     }
   }
 
-void _showImageOverlay(BuildContext context, String outlierStatus) {
-  final overlay = Overlay.of(context);
-  String graphTitle = "";
-  OverlayEntry? overlayEntry;
+  void _showImageOverlay(BuildContext context, String outlierStatus) {
+    final overlay = Overlay.of(context);
+    String graphTitle = "";
+    OverlayEntry? overlayEntry;
 
-  if(outlierStatus == "Not Resolved"){
-    graphTitle = "Unresolved Outliers Graph";
-  }else{
-    graphTitle = "Resolved Outliers Graph";
-  }
+    if(outlierStatus == "Not Resolved"){
+      graphTitle = "Unresolved Outliers Graph";
+    }else{
+      graphTitle = "Resolved Outliers Graph";
+    }
 
-  overlayEntry = OverlayEntry(
-    builder: (context) => Positioned(
-      top: 100.0,
-      left: 50.0,
-      right: 50.0,
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          width: 300.0,
-          height: 400.0,
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(graphTitle, style: TextStyle(fontWeight: FontWeight.bold)),
-              if (isLoading)
-                CircularProgressIndicator()
-              else
-                Image.memory(imageBytes!), // Display the image from the server
-              
-              ElevatedButton(
-                onPressed: () {
-                  overlayEntry?.remove();
-                },
-                child: Text("Close"),
-              ),
-            ],
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 100.0,
+        left: 50.0,
+        right: 50.0,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: 300.0,
+            height: 400.0,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(graphTitle, style: TextStyle(fontWeight: FontWeight.bold)),
+                if (isLoading)
+                  CircularProgressIndicator()
+                else
+                  Image.memory(imageBytes!), // Display the image from the server
+                
+                ElevatedButton(
+                  onPressed: () {
+                    overlayEntry?.remove();
+                  },
+                  child: Text("Close"),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-  overlay.insert(overlayEntry);
-  
-}
+    );
+    overlay.insert(overlayEntry);
+    
+  }
 
 
   @override
   Widget build(BuildContext context) {
+    print("Outliers/CSV Data: $widget.csvData");
+    print("Outliers/Columns: $widget.columns");
+    print("Outliers/Classifications: $widget.classifications");
+    print("Numerical Columns: $numericalColumns");
+    
     return Scaffold(
       appBar: AppBar(title: Text("Handle Outliers")),
       body: Padding(

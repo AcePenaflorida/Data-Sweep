@@ -1,3 +1,4 @@
+from statistics import StatisticsError, mode
 import traceback
 from flask import Flask, request, jsonify, send_file
 import matplotlib
@@ -13,6 +14,8 @@ from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 
 app = Flask(__name__)
+
+
 
 def to_title_case(string):
     return ' '.join([word.capitalize() if len(word) > 1 else word.upper() for word in string.split(' ')])
@@ -269,47 +272,6 @@ def map_categorical_values(data, column, unique_values, standard_format):
     print(result)
 
     return result
-
-
-# def plot_boxen_with_outliers(df, column):
-#     # Calculate IQR and outlier thresholds
-#     q1 = df[column].quantile(0.25)
-#     q3 = df[column].quantile(0.75)
-#     iqr = q3 - q1
-#     outlier_threshold_lower = q1 - 1.5 * iqr
-#     outlier_threshold_upper = q3 + 1.5 * iqr
-
-#     # Separate normal data and outliers
-#     normal_data = df[(df[column] >= outlier_threshold_lower) & (df[column] <= outlier_threshold_upper)]
-#     outliers = df[(df[column] < outlier_threshold_lower) | (df[column] > outlier_threshold_upper)]
-
-#     # Calculate the size and spacing based on the number of data points
-#     num_points = len(df)
-#     point_size = 10 if num_points > 500 else 30  # Smaller points for larger datasets
-#     fig_width = 10 if num_points > 500 else 5     # Larger figure for larger datasets
-
-#     # Plot boxen plot
-#     plt.figure(figsize=(fig_width, 6))
-#     sns.boxenplot(data=df, x=column, color="green", showfliers=False)
-
-#     # Overlay normal data points in blue and outliers in red
-#     sns.scatterplot(data=normal_data, x=column, y=[0] * len(normal_data), color='blue', s=point_size, label='Normal Data')
-#     sns.scatterplot(data=outliers, x=column, y=[0] * len(outliers), color='red', s=point_size * 1.5, label='Outliers')
-
-#     # Set x-axis to logarithmic scale
-#     plt.xscale('log')
-
-#     # Set title with number of elements, and add a legend
-#     plt.title(f'Boxenplot for {column} (Total: {num_points} values, {len(outliers)} outliers)')
-#     plt.legend()
-
-#     # Save the plot to a BytesIO object and return it
-#     img = io.BytesIO()
-#     plt.savefig(img, format='png')
-#     img.seek(0)
-#     plt.close()  # Close the plot to free memory
-#     return img
-
 
 def calculate_iqr_thresholds(series):
     q1 = series.quantile(0.25)
@@ -648,6 +610,61 @@ def process_data():
 
     else:
         return jsonify({"error": "Invalid action"}), 400
+
+# @app.route('/get_column_dtype', methods=['POST'])
+# def get_majority_dtype():
+#     print("Function Invoked: get_majority_dtype")
+#     data = request.json('data')
+#     columnName = request.json('columnName')
+
+#     # returns the specific column
+#     column = map_column_in_dataset(data, columnName)
+#     column_cleaned = column.dropna()
+    
+#     # Check for numerical values
+#     try:
+#         numeric_column = pd.to_numeric(column_cleaned, errors='coerce')
+#         numeric_count = numeric_column.notna().sum()
+#     except Exception:
+#         numeric_count = 0
+    
+#     # Check for date values
+#     try:
+#         date_column = pd.to_datetime(column_cleaned, errors='coerce')
+#         date_count = date_column.notna().sum()
+#     except Exception:
+#         date_count = 0
+    
+#     # Count non-numeric, non-date values
+#     non_numeric_non_date_count = len(column_cleaned) - numeric_count - date_count
+    
+#     # Determine majority type
+#     type_counts = {
+#         'numeric': numeric_count,
+#         'date': date_count,
+#         'non-numeric': non_numeric_non_date_count
+#     }
+    
+#     majority_type = max(type_counts, key=type_counts.get)
+    
+#     return jsonify(majority_type)
+
+# def convert_numeric_values(value):
+#     try:
+#         # If the value can be converted to a number, return the numeric value (either int or float)
+#         return pd.to_numeric(value, errors='raise')
+    
+#     except:
+#         # If it cannot be converted (e.g., it's a string like 'ace'), return the original value
+#         return value
+
+# def map_column_in_dataset(data, columnName):
+#     # Apply the conversion function to each element in the specified column of the DataFrame
+#     data[columnName] = data[columnName].apply(convert_numeric_values)
+#     return data[columnName].tolist()
+
+
+
 
 @app.route('/numerical_missing_values', methods=['POST'])
 def numerical_missing_values():

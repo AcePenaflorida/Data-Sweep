@@ -1,4 +1,5 @@
-import 'package:data_sweep/outliers_page.dart';
+import 'package:data_sweep/outliers.dart';
+import 'package:data_sweep/outliers.dart';
 import 'package:flutter/material.dart';
 import 'issues_page.dart';
 
@@ -77,7 +78,7 @@ class SelectionPages extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => OutliersPage(
-                      // NOT SURE KUNG ANO NEED MO.
+                      // NOT SURE KUNG ANO NEED MO. **PERA :<** dejok HHHAHA
                       //Gawa nalng u ng function sa outlierspage para madiregard ang hindi numerical
                       csvData: csvData,
                       columns: columns,
@@ -86,7 +87,7 @@ class SelectionPages extends StatelessWidget {
                   ),
                 );
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Outliers feature coming soon!")),
+                  SnackBar(content: Text("Handle Outliers By Column")),
                 );
               },
               child: Padding(

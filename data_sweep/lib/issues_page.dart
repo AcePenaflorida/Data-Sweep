@@ -4,7 +4,7 @@ import 'package:data_sweep/issues/numerical.dart';
 import 'package:data_sweep/issues/date.dart';
 import 'package:data_sweep/issues/non_categorical.dart';
 import 'package:data_sweep/main.dart';
-import 'package:data_sweep/outliers_page.dart';
+import 'package:data_sweep/outliers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';

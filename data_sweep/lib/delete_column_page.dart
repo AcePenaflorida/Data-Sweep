@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:data_sweep/config.dart'; // to get ip
 import 'package:csv/csv.dart';
 import 'package:data_sweep/classification_page.dart';
-import 'package:data_sweep/outliers.dart';
 import 'package:data_sweep/preview_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
