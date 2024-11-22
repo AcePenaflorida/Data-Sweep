@@ -370,6 +370,13 @@ def filter_outliers_by_z_score(df, column):
     new_df = df.loc[(df[column] < upper_limit) & (df[column] > lower_limit)]
     return new_df
 
+def cap_and_floor(df, column):
+    lower_limit, upper_limit = calculate_iqr_thresholds(df[column])
+    df[column] = df[column].apply(
+        lambda x: upper_limit if x > upper_limit else (lower_limit if x < lower_limit else x)
+    )
+    return df
+
 @app.route('/outliers_graph', methods=['POST'])
 def outliers_graph():
     data = request.json.get('data')
@@ -379,22 +386,34 @@ def outliers_graph():
     df = pd.DataFrame(data[1:], columns=data[0])
     print(f"column_name: {column_name}")
     print(f"data: {data}")
-    
 
     outlier_detection_method = choose_outlier_detection_method(df, column_name)
+    outliers_count = 1
+    filtered_outliers = df.copy()
 
     if(task == "Show Outliers" and method == ""):
         img, outliers_count = plot_boxen_with_outliers(df, column_name, outlier_detection_method)
         print(f"Outliers: {outliers_count}")
-        
-    elif(task == "Resolve Outliers"):
-        if method == "Remove":
-            outliers_count = 1  # Initial value to ensure the loop runs at least once
-            filtered_outliers = df.copy()  # Start with the entire dataset
 
-            while outliers_count != 0:
+    elif task == "Resolve Outliers":
+        while outliers_count != 0:
+            if method == "Remove":
                 filtered_outliers = filter_outliers_by_z_score(filtered_outliers, column_name)
-                img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
+            elif method == "Cap and Floor":
+                filtered_outliers = cap_and_floor(filtered_outliers, column_name)
+            
+            img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
+        
+    # elif(task == "Resolve Outliers"):
+        # if (method == "Remove"):
+        #     while (outliers_count != 0):
+        #         filtered_outliers = filter_outliers_by_z_score(filtered_outliers, column_name)
+        #         img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
+
+        # elif (method == "Cap and Floor"):
+        #     while (outliers_count!=0):
+        #         filtered_outliers = cap_and_floor(filtered_outliers, column_name)
+        #         img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
     
     return send_file(img, mimetype='image/png', as_attachment=True, download_name='outliers.png')
 

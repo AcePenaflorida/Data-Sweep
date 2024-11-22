@@ -34,7 +34,6 @@ class _OutliersPageState extends State<OutliersPage> {
     'Replace with Mean',
     'Replace with Median'
   ];
-  // List<String> numericalColumns = ['Age']; // Sample data
   late List<String> numericalColumns = getNumericalColumns();
 
   String outlierStatus = ""; // Resolved or Not Resolved
@@ -260,7 +259,8 @@ class _OutliersPageState extends State<OutliersPage> {
         });
         // Handle error, maybe show a message
       }
-      print('Outlier status is resolved');
+      print('Outlier status is resolved via');
+      print(resolveOutlierMethod);
     }
   }
 
@@ -486,11 +486,13 @@ class _OutliersPageState extends State<OutliersPage> {
                                         textControllers[index].text =
                                             selectedValue ?? '';
 
-                                        if (selectedValue ==
-                                            handleOutliersOptions[0]) {
+                                        if (selectedValue == handleOutliersOptions[0]) {
                                           resolve_outlier_method = "Remove";
+                                        }else if(selectedValue == handleOutliersOptions[1]){
+                                          resolve_outlier_method = "Cap and Floor"; 
                                         }
                                       },
+
                                       decoration: InputDecoration(
                                         hintText: 'Options',
                                         hintStyle: TextStyle(fontSize: 12),
