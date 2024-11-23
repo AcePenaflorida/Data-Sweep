@@ -377,6 +377,49 @@ def cap_and_floor(df, column):
     )
     return df
 
+def replace_with_mean(df, column):
+    lower_limit, upper_limit = calculate_iqr_thresholds(df[column])
+    column_mean = df[column].mean()
+    df[column] = df[column].apply(
+        lambda x: column_mean if x > upper_limit or x < lower_limit else x
+    )
+    return df
+
+def replace_with_median(df, column):
+    lower_limit, upper_limit = calculate_iqr_thresholds(df[column])
+    column_median = df[column].median()
+    df[column] = df[column].apply(
+        lambda x: column_median if x > upper_limit or x < lower_limit else x
+    )
+    return df
+
+@app.route('/scale_features', methods=['POST'])
+def scale_features():
+    data = request.json.get('data')
+    numerical_columns = request.json.get('numerical_columns')
+    scaling_methods = request.json.get('scaling_methods')
+
+    df = pd.DataFrame(data[1:], columns=data[0])  # Convert to DataFrame using headers from the first row
+
+    # Apply the scaling method for each numerical column
+    for col in numerical_columns:
+        method = scaling_methods.get(col, 'None')
+        if method == 'Normalization':
+            if col in df.columns:
+                df[col] = (df[col] - df[col].min()) / (df[col].max() - df[col].min())
+        elif method == 'Standardization':
+            if col in df.columns:
+                df[col] = (df[col] - df[col].mean()) / df[col].std()
+
+    # Convert the DataFrame back to a list of lists, including the column names
+    scaled_data = df.values.tolist()
+    combined_data = [df.columns.tolist()] + scaled_data
+
+    return jsonify(combined_data)
+
+
+
+
 @app.route('/outliers_graph', methods=['POST'])
 def outliers_graph():
     data = request.json.get('data')
@@ -401,19 +444,12 @@ def outliers_graph():
                 filtered_outliers = filter_outliers_by_z_score(filtered_outliers, column_name)
             elif method == "Cap and Floor":
                 filtered_outliers = cap_and_floor(filtered_outliers, column_name)
+            elif method == "Replace with Mean":
+                filtered_outliers = replace_with_mean(filtered_outliers, column_name)
+            elif method == "Replace with Median":
+                filtered_ouliters = replace_with_median(filtered_outliers, column_name)
             
             img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
-        
-    # elif(task == "Resolve Outliers"):
-        # if (method == "Remove"):
-        #     while (outliers_count != 0):
-        #         filtered_outliers = filter_outliers_by_z_score(filtered_outliers, column_name)
-        #         img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
-
-        # elif (method == "Cap and Floor"):
-        #     while (outliers_count!=0):
-        #         filtered_outliers = cap_and_floor(filtered_outliers, column_name)
-        #         img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
     
     return send_file(img, mimetype='image/png', as_attachment=True, download_name='outliers.png')
 
@@ -424,30 +460,26 @@ def get_cleaned_file():
     task = request.json.get('task')
     method = request.json.get('method')
 
-    # Convert the incoming data to a DataFrame
     df = pd.DataFrame(data[1:], columns=data[0])
     outlier_detection_method = choose_outlier_detection_method(df, column_name)
+    filtered_outliers = df.copy()
 
-    # Check if task is "Resolve Outliers" and method is "Remove"
-    if task == "Resolve Outliers" and method == "Remove":
-        outliers_count = 1  # Initial value to ensure the loop runs at least once
-        filtered_outliers = df.copy()  # Start with the entire dataset
-
-        while outliers_count != 0:
+    # Apply the selected outlier removal method
+    if task == "Resolve Outliers":
+        if method == "Remove":
             filtered_outliers = filter_outliers_by_z_score(filtered_outliers, column_name)
-            # We don't need to count outliers explicitly anymore
-            outliers_count = filtered_outliers[column_name].isnull().sum()  # A simple check for removed values
-
+        elif method == "Cap and Floor":
+            filtered_outliers = cap_and_floor(filtered_outliers, column_name)
+        elif method == "Replace with Mean":
+            filtered_outliers = replace_with_mean(filtered_outliers, column_name)
+        elif method == "Replace with Median":
+            filtered_outliers = replace_with_median(filtered_outliers, column_name)
+    
     # Convert cleaned data to a list of lists (for JSON serialization)
     cleaned_data = filtered_outliers.values.tolist()
     
-    # Return the cleaned data as JSON
+    # Return both the cleaned data and the column names
     return jsonify(cleaned_data)
-
-
-
-    
-
 
 @app.route('/map_categorical_values', methods=['POST'])
 def map_categorical_values_route():
@@ -769,5 +801,5 @@ def numerical_missing_values():
         return jsonify({"error": str(e)}), 500
     
 if __name__ == '__main__':
-    # Set host to 0.0.0.0 to make it accessible on the network, port to 5000
+
     app.run(host='0.0.0.0', port=5000, debug=True)

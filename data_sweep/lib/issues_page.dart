@@ -5,6 +5,7 @@ import 'package:data_sweep/issues/date.dart';
 import 'package:data_sweep/issues/non_categorical.dart';
 import 'package:data_sweep/main.dart';
 import 'package:data_sweep/outliers.dart';
+import 'package:data_sweep/scaling_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -209,13 +210,17 @@ class _IssuesPageState extends State<IssuesPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                // Navigator.of(context).pop(); // Close dialog
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => FeatureScalingPage(), // Placeholder page
-                //   ),
-                // );
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FeatureScalingPage(
+                      csvData: cleanedData,
+                      columns: widget.columns,
+                      classifications: widget.classifications,
+                    ),
+                  ),
+                );
               },
               child: Text("Go to Feature Scaling"),
             ),
@@ -424,13 +429,17 @@ class _IssuesPageState extends State<IssuesPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Navigator.of(context).pop(); // Close dialog
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => FeatureScalingPage(), // Placeholder page
-                    //   ),
-                    // );
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FeatureScalingPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
                   },
                   child: Text("Go to Feature Scaling"),
                 ),

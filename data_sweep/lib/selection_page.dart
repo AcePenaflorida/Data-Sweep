@@ -1,4 +1,5 @@
 import 'package:data_sweep/outliers.dart';
+import 'package:data_sweep/scaling_page.dart';
 import 'package:flutter/material.dart';
 import 'issues_page.dart';
 
@@ -110,19 +111,15 @@ class SelectionPages extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => ScalingPage(
-                //       csvData: csvData,
-                //       columns: columns,
-                //       classifications: classifications,
-                //     ),
-                //   ),
-                // );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text("Feature Scaling feature coming soon!")),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FeatureScalingPage(
+                      csvData: csvData,
+                      columns: columns,
+                      classifications: classifications,
+                    ),
+                  ),
                 );
               },
               child: Padding(
