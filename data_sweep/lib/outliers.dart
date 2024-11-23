@@ -5,6 +5,7 @@ import 'package:csv/csv.dart';
 import 'package:data_sweep/config.dart';
 import 'package:data_sweep/main.dart';
 import 'package:data_sweep/preview_page.dart';
+import 'package:data_sweep/scaling_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -154,13 +155,17 @@ class _OutliersPageState extends State<OutliersPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                // Navigator.of(context).pop(); // Close dialog
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => FeatureScalingPage(), // Placeholder page
-                //   ),
-                // );
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FeatureScalingPage(
+                      csvData: cleanedData,
+                      columns: widget.columns,
+                      classifications: widget.classifications,
+                    ),
+                  ),
+                );
               },
               child: Text("Go to Feature Scaling"),
             ),
@@ -226,7 +231,7 @@ class _OutliersPageState extends State<OutliersPage> {
         setState(() {
           isLoading = false;
         });
-        // Handle error, maybe show a message
+        _showErrorDialog(context);
       }
     } else {
       setState(() {
@@ -257,7 +262,7 @@ class _OutliersPageState extends State<OutliersPage> {
         setState(() {
           isLoading = false;
         });
-        // Handle error, maybe show a message
+        _showErrorDialog(context);
       }
       print('Outlier status is resolved via');
       print(resolveOutlierMethod);
@@ -294,6 +299,7 @@ class _OutliersPageState extends State<OutliersPage> {
       setState(() {
         isLoading = false;
       });
+      _showErrorDialog(context);
     }
   }
 
@@ -353,6 +359,41 @@ class _OutliersPageState extends State<OutliersPage> {
       ),
     );
     overlay.insert(overlayEntry);
+  }
+
+  void _showErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Data cleaning is required before you can proceed. Please review and fix the data issues in this column.",
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the error dialog
+                  Navigator.of(context).pop(); // Go back to the previous page
+                },
+                child: Text('Go Back'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

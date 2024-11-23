@@ -46,7 +46,6 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
         numericalColumns.add(widget.columns[i]);
       }
     }
-    print("numericalcolumns: $numericalColumns");
     return numericalColumns;
   }
 
@@ -131,32 +130,95 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
         var jsonResponse = jsonDecode(response.body);
         List<List<dynamic>> scaledDataset =
             List<List<dynamic>>.from(jsonResponse);
-        print(scaledDataset);
         setState(() {
           scaledData = scaledDataset;
           isLoading = false;
         });
       } else {
-        // If the response status is not 200, handle the error
         setState(() {
           isLoading = false;
         });
-        print(
-            "Error: Failed to scale data. Status Code: ${response.statusCode}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to scale features. Try again!")),
-        );
+        _showErrorDialog(context);
       }
     } catch (e) {
       setState(() {
         isLoading = false;
       });
-      print("Error: ${e.toString()}");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text("Error occurred while scaling features. Try again!")),
       );
     }
+  }
+
+  void _showErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Data cleaning is required before you can proceed. Please review and fix the data issues in this column.",
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the error dialog
+                  Navigator.of(context).pop(); // Go back to the previous page
+                },
+                child: Text('Go Back'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDownloadDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Download Confirmation"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "What you see in the preview is what will be downloaded. Please double-check before proceeding.",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: _fileNameController,
+                decoration: InputDecoration(
+                  labelText: "Enter Filename (without .csv)",
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _downloadCSV(); // Proceed to download
+                },
+                child: Text("Download File"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -228,15 +290,10 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
                 child: Text("Scale and Proceed"),
               ),
               const SizedBox(height: 10),
-              TextField(
-                controller: _fileNameController,
-                decoration: InputDecoration(
-                  labelText: "Enter Filename for Download (without .csv)",
-                ),
-              ),
-              const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: _downloadCSV,
+                onPressed: () {
+                  _showDownloadDialog(context); // Show download confirmation
+                },
                 child: Text("Download Scaled CSV"),
               ),
               ElevatedButton(
