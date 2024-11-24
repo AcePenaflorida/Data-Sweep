@@ -636,50 +636,54 @@ def reformat_date_route():
 
 @app.route('/non_categorical_missing_values', methods=['POST'])
 def process_data():
-    print("Non-categorical-missingvlauesss")
+    print("YOU GOT HERE")
     data = request.json
-    column_name = data.get('column')  
+    column_name = data.get('column')
     action = data.get('action')
     fill_value = data.get('fillValue')
     dataset = data.get('data')
+    print(fill_value)
 
     if not dataset:
         return jsonify({"error": "No data provided"}), 400
 
+    # Create a DataFrame and replace empty strings with NaN
     df = pd.DataFrame(dataset[1:], columns=dataset[0]).replace("", np.nan)
     print(f"DataFrame Columns: {df.columns}")
 
+    if column_name not in df.columns:
+        return jsonify({"error": "Column not found"}), 400
+
     if action == "Remove Rows":
         print("Action: Remove Rows")
-        print(f"DataFrame Columns: {df.columns}")
-
-        if column_name not in df.columns:
-            print("Column not found")
-            return jsonify({"error": "Column not found"}), 400
-
         cleaned_df = df.dropna(subset=[column_name])
         cleaned_df = cleaned_df.applymap(lambda x: "" if pd.isna(x) else x)
         cleaned_data = [list(cleaned_df.columns)] + cleaned_df.values.tolist()
-        print(f"Cleaned Data (RemoveRows): {cleaned_data}")
+        print(f"Cleaned Data (Remove Rows): {cleaned_data}")
         return jsonify(cleaned_data)
 
     elif action == "Fill with":
-        column_index = None
-        if dataset and column_name:
-            header = [col for col in dataset[0]]
-            if column_name in header:
-                column_index = header.index(column_name)
-                
-        if column_index is None:
-            return jsonify({"error": "Column not found"}), 400
-        print(f"column_index: {column_index}")
+        if fill_value is None or fill_value == "": 
+            fill_value = ""  # or set a default value
+        column_index = dataset[0].index(column_name)  # Get column index from header
+        print(f"Column Index: {column_index}")
+
         for row in dataset[1:]:
-            print(f"fill_value: {fill_value}")
-            if not row[column_index]: 
-                row[column_index] = fill_value 
+            if not row[column_index]:  # If the value is missing
+                row[column_index] = fill_value
 
         print(f"Cleaned Data (Fill with): {dataset}")
         return jsonify(dataset)
+
+    elif action == "Fill with Mode":
+        print("Action: Fill with Mode")
+        mode_value = df[column_name].mode().iloc[0] if not df[column_name].mode().empty else ""
+        print(f"Mode Value for {column_name}: {mode_value}")
+
+        df[column_name] = df[column_name].fillna(mode_value)
+        filled_data = [list(df.columns)] + df.applymap(lambda x: "" if pd.isna(x) else x).values.tolist()
+        print(f"Cleaned Data (Fill with Mode): {filled_data}")
+        return jsonify(filled_data)
 
     elif action == "Leave Blank":
         print(f"Cleaned Data (Leave Blank): {dataset}")
@@ -687,6 +691,8 @@ def process_data():
 
     else:
         return jsonify({"error": "Invalid action"}), 400
+
+
 
 # @app.route('/get_column_dtype', methods=['POST'])
 # def get_majority_dtype():

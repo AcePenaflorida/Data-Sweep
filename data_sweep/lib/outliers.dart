@@ -396,6 +396,41 @@ class _OutliersPageState extends State<OutliersPage> {
     );
   }
 
+  void _showDownloadDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Download Confirmation"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "What you see in the preview is what will be downloaded. Please double-check before proceeding.",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: _fileNameController,
+                decoration: InputDecoration(
+                  labelText: "Enter Filename (without .csv)",
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _downloadCSV(); // Proceed to download
+                },
+                child: Text("Download File"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     print("Outliers/Columns: $widget.columns");
@@ -462,7 +497,7 @@ class _OutliersPageState extends State<OutliersPage> {
                             TableCell(
                               child: Center(
                                 child: Text(
-                                  "View Resolved Outliers",
+                                  "Fix and View Resolved Outliers",
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
@@ -604,7 +639,9 @@ class _OutliersPageState extends State<OutliersPage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _downloadCSV,
+              onPressed: () {
+                _showDownloadDialog(context);
+              },
               child: Text("Download CSV"),
             ),
             ElevatedButton(

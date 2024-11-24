@@ -5,9 +5,9 @@ import 'package:data_sweep/config.dart';
 
 class CategoricalPage extends StatefulWidget {
   final List<List<dynamic>> dataset;
-  final String columnName; // Column name for reference
-  final List<String> categoricalData; // Data of the column
-  final List<String> issues; // List of issues for this column
+  final String columnName;
+  final List<String> categoricalData;
+  final List<String> issues;
 
   CategoricalPage({
     required this.columnName,
@@ -25,17 +25,24 @@ class _CategoricalPageState extends State<CategoricalPage> {
   late List<String> uniqueValues;
   late List<List<dynamic>> _reformattedDataset;
 
+  String? missingValueOption =
+      "Leave Blank"; // Default option set to "Leave Blank"
+  TextEditingController fillValueController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _reformattedDataset = widget.dataset;
-    print("DATA COLUMN: ${widget.categoricalData}");
+
     uniqueValues = widget.categoricalData
+        .where((value) => value.isNotEmpty) // Exclude missing values
         .toSet()
-        .toList(); // Get unique values from the categorical data
+        .toList();
+
+    // Initialize text controllers with unique values
     textControllers = uniqueValues
-        .map((e) => TextEditingController())
-        .toList(); // Initialize the text controllers for each unique value
+        .map((value) => TextEditingController(text: value))
+        .toList();
   }
 
   @override
@@ -43,47 +50,96 @@ class _CategoricalPageState extends State<CategoricalPage> {
     for (var controller in textControllers) {
       controller.dispose();
     }
+    fillValueController.dispose();
     super.dispose();
   }
 
-  Future<List<List<dynamic>>> standardizeCategoryValues(
-      List<List<dynamic>> data, standardizedValues) async {
-    print("Function Invoked: standardizeCategoryValues...");
-    var uri = Uri.parse('$baseURL/map_categorical_values');
-    var response = await http.post(uri,
-        body: json.encode({
-          'data': data,
-          'column': widget.columnName,
-          'unique_values': uniqueValues,
-          'standard_format': standardizedValues,
-        }),
-        headers: {'Content-Type': 'application/json'});
-    print("Response Status: ${response.statusCode}");
-    print("Response Body: ${response.body}");
-    if (response.statusCode == 200) {
-      return List<List<dynamic>>.from(json.decode(response.body));
-    } else {
-      throw Exception('Failed to standardized categorical columns......');
-    }
-  }
+  Future<List<List<dynamic>>> resolveMissingValuesAndStandardize(
+      List<String> standardizedValues) async {
+    String fillValue =
+        missingValueOption == "Fill with" && fillValueController.text.isNotEmpty
+            ? fillValueController.text
+            : '';
+    var uriMissing = Uri.parse('$baseURL/non_categorical_missing_values');
+    var requestDataMissing = {
+      'column': widget.columnName,
+      'action': missingValueOption,
+      'fillValue': missingValueOption == "Fill with" ? fillValue : null,
+      'data': _reformattedDataset,
+    };
 
-  Future<void> resolveStandardization(standardizedValues) async {
+    var responseMissing = await http.post(
+      uriMissing,
+      body: json.encode(requestDataMissing),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (responseMissing.statusCode != 200) {
+      throw Exception('Failed to resolve missing values.');
+    }
+    print("NAKUAH");
+
+    // Step 2: Update dataset with resolved missing values
+    String responseBody = responseMissing.body;
+
+    // Sanitize response body by replacing 'NaN' and any unwanted values with an empty string
+    responseBody =
+        responseBody.replaceAll('NaN', '""').replaceAll('null', '""');
+
     try {
-      List<List<dynamic>> reformattedData =
-          await standardizeCategoryValues(widget.dataset, standardizedValues);
-      setState(() {
-        _reformattedDataset = reformattedData;
-      });
+      // Decode the sanitized response body
+      List<List<dynamic>> resolvedData =
+          List<List<dynamic>>.from(json.decode(responseBody));
+
+      // Step 3: Filter out rows with missing values
+      List<List<dynamic>> rowsWithoutMissingValues = resolvedData
+          .where(
+              (row) => row[widget.dataset[0].indexOf(widget.columnName)] != "")
+          .toList();
+
+      // Step 4: Standardize Values
+      var uriStandardize = Uri.parse('$baseURL/map_categorical_values');
+      var requestDataStandardize = {
+        'data': rowsWithoutMissingValues,
+        'column': widget.columnName,
+        'unique_values': uniqueValues,
+        'standard_format': standardizedValues,
+      };
+
+      var responseStandardize = await http.post(
+        uriStandardize,
+        body: json.encode(requestDataStandardize),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (responseStandardize.statusCode == 200) {
+        // Replace rows with standardized rows and keep missing data untouched
+        List<List<dynamic>> standardizedData =
+            List<List<dynamic>>.from(json.decode(responseStandardize.body));
+
+        for (int i = 0; i < resolvedData.length; i++) {
+          if (resolvedData[i][widget.dataset[0].indexOf(widget.columnName)] ==
+              "") {
+            // Retain missing rows
+            standardizedData.insert(i, resolvedData[i]);
+          }
+        }
+
+        return standardizedData;
+      } else {
+        throw Exception('Failed to standardize categorical values.');
+      }
     } catch (e) {
-      print("Error: $e");
+      print("Error while processing response: $e");
+      throw Exception(
+          'Error processing missing values or standardizing the dataset.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Column: ${widget.columnName}");
-    print("Unique Values: ${uniqueValues}");
-    print("Column All Data: ${widget.categoricalData}");
+    bool hasMissingValues = widget.issues.contains("Missing Values");
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Standardize Categorical Values - ${widget.columnName}"),
@@ -93,6 +149,68 @@ class _CategoricalPageState extends State<CategoricalPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (hasMissingValues) ...[
+              Text(
+                'Missing Values',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Column(
+                children: [
+                  RadioListTile<String>(
+                    title: const Text("Remove Rows with Missing Values"),
+                    value: "Remove Rows",
+                    groupValue: missingValueOption,
+                    onChanged: (value) {
+                      setState(() {
+                        missingValueOption = value;
+                      });
+                    },
+                  ),
+                  RadioListTile<String>(
+                    title: const Text("Fill with Mode"),
+                    value: "Fill with Mode",
+                    groupValue: missingValueOption,
+                    onChanged: (value) {
+                      setState(() {
+                        missingValueOption = value;
+                      });
+                    },
+                  ),
+                  RadioListTile<String>(
+                    title: const Text("Fill with Custom Value"),
+                    value: "Fill with",
+                    groupValue: missingValueOption,
+                    onChanged: (value) {
+                      setState(() {
+                        missingValueOption = value;
+                      });
+                    },
+                  ),
+                  if (missingValueOption == "Fill with")
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        controller: fillValueController,
+                        decoration: InputDecoration(
+                          labelText: "Enter value",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  RadioListTile<String>(
+                    title: const Text("Leave Blank"),
+                    value: "Leave Blank",
+                    groupValue: missingValueOption,
+                    onChanged: (value) {
+                      setState(() {
+                        missingValueOption = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
             Text("Standardize the categorical values below:"),
             const SizedBox(height: 20),
             Expanded(
@@ -100,7 +218,6 @@ class _CategoricalPageState extends State<CategoricalPage> {
                 child: Table(
                   border: TableBorder.all(),
                   children: [
-                    // Header row with bold styling
                     TableRow(children: [
                       TableCell(
                         child: Center(
@@ -119,8 +236,6 @@ class _CategoricalPageState extends State<CategoricalPage> {
                         ),
                       ),
                     ]),
-
-                    // Rows for each unique value
                     ...List.generate(uniqueValues.length, (index) {
                       return TableRow(children: [
                         TableCell(
@@ -130,6 +245,7 @@ class _CategoricalPageState extends State<CategoricalPage> {
                           child: Center(
                             child: DropdownButtonHideUnderline(
                               child: DropdownButtonFormField<String>(
+                                value: uniqueValues[index],
                                 items: uniqueValues.map((value) {
                                   return DropdownMenuItem(
                                     value: value,
@@ -157,12 +273,9 @@ class _CategoricalPageState extends State<CategoricalPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                // Get the standardized values entered or selected by the user
                 List<String> standardizedValues = textControllers
                     .map((controller) => controller.text)
                     .toList();
-
-                print("Selected Standard: ${standardizedValues}");
 
                 if (standardizedValues.any((value) => value.isEmpty)) {
                   showDialog(
@@ -183,11 +296,17 @@ class _CategoricalPageState extends State<CategoricalPage> {
                     },
                   );
                 } else {
-                  await resolveStandardization(standardizedValues);
-                  Navigator.pop(context, _reformattedDataset);
+                  try {
+                    _reformattedDataset =
+                        await resolveMissingValuesAndStandardize(
+                            standardizedValues);
+                    Navigator.pop(context, _reformattedDataset);
+                  } catch (e) {
+                    print("Error: $e");
+                  }
                 }
               },
-              child: Text("Submit Standardized Values"),
+              child: Text("Resolve & Standardize"),
             ),
           ],
         ),
