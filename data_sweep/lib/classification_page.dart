@@ -29,8 +29,9 @@ class _ClassificationPageState extends State<ClassificationPage> {
     columns = List<String>.from(widget.csvData[0]);
     columnClassifications =
         List.generate(columns.length, (index) => [0, 0, 0, 0]);
-    columnCasingSelections = List.generate(columns.length, (index) => "");
-    columnDateFormats = List.generate(columns.length, (index) => "");
+    columnCasingSelections =
+        List.generate(columns.length, (index) => "UPPERCASE");
+    columnDateFormats = List.generate(columns.length, (index) => "mm/dd/yyyy");
   }
 
   String getClassificationText(int index) {
@@ -260,7 +261,8 @@ class _ClassificationPageState extends State<ClassificationPage> {
                               ],
                               onChanged: (value) {
                                 setState(() {
-                                  columnCasingSelections[index] = value ?? "";
+                                  columnCasingSelections[index] =
+                                      value ?? "UPPERCASE";
                                 });
                               },
                             ),
@@ -293,7 +295,8 @@ class _ClassificationPageState extends State<ClassificationPage> {
                               ],
                               onChanged: (value) {
                                 setState(() {
-                                  columnDateFormats[index] = value ?? "";
+                                  columnDateFormats[index] =
+                                      value ?? "mm/dd/yyyy";
                                 });
                               },
                             ),
@@ -391,12 +394,6 @@ class _ClassificationPageState extends State<ClassificationPage> {
                     });
                   });
                   print(columnDateFormats);
-
-                  String selectedDateFormat = columnDateFormats.firstWhere(
-                    (format) => format.trim().isNotEmpty,
-                    orElse: () => '',
-                  );
-                  print("SelectedDateFormat: ${selectedDateFormat}");
                   print("CATEGORY TO ISSUE: ${columns}");
                   Navigator.push(
                     context,
@@ -406,7 +403,7 @@ class _ClassificationPageState extends State<ClassificationPage> {
                         columns: columns,
                         classifications: columnClassifications,
                         casingSelections: columnCasingSelections,
-                        dateFormats: selectedDateFormat,
+                        dateFormats: columnDateFormats,
                       ),
                     ),
                   );

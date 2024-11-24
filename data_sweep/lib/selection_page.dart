@@ -8,7 +8,7 @@ class SelectionPages extends StatelessWidget {
   final List<String> columns;
   final List<List<int>> classifications;
   final List<String> casingSelections;
-  final String dateFormats;
+  final List<String> dateFormats;
 
   SelectionPages({
     required this.csvData,
@@ -85,9 +85,6 @@ class SelectionPages extends StatelessWidget {
                       classifications: classifications, //CATEGORIES PER COLUMN
                     ),
                   ),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Handle Outliers By Column")),
                 );
               },
               child: Padding(

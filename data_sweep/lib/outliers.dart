@@ -40,7 +40,7 @@ class _OutliersPageState extends State<OutliersPage> {
   String outlierStatus = ""; // Resolved or Not Resolved
   bool isLoading = false;
   Uint8List? imageBytes;
-  String resolve_outlier_method = "";
+  String resolve_outlier_method = "Cap and Floor";
 
   late List<List<dynamic>> cleanedData = widget.csvData;
 
@@ -383,14 +383,6 @@ class _OutliersPageState extends State<OutliersPage> {
               ),
             ],
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('OK'),
-            ),
-          ],
         );
       },
     );
@@ -549,6 +541,7 @@ class _OutliersPageState extends State<OutliersPage> {
                                 child: Center(
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButtonFormField<String>(
+                                      value: resolve_outlier_method,
                                       items: handleOutliersOptions.map((value) {
                                         return DropdownMenuItem(
                                           value: value,
@@ -643,6 +636,22 @@ class _OutliersPageState extends State<OutliersPage> {
                 _showDownloadDialog(context);
               },
               child: Text("Download CSV"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FeatureScalingPage(
+                      csvData: cleanedData,
+                      columns: widget.columns,
+                      classifications: widget.classifications,
+                    ),
+                  ),
+                );
+              },
+              child: Text("Go to Feature Scaling"),
             ),
             ElevatedButton(
               onPressed: () {

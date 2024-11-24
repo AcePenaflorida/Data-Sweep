@@ -20,7 +20,7 @@ class IssuesPage extends StatefulWidget {
   final List<String> columns;
   final List<List<int>> classifications;
   final List<String> casingSelections;
-  final String dateFormats;
+  final List<String> dateFormats;
 
   IssuesPage({
     required this.csvData,
@@ -103,14 +103,12 @@ class _IssuesPageState extends State<IssuesPage> {
   }
 
   Future<Map<String, dynamic>> _formatDataFindIssues() async {
-    // Apply letter casing
     List<List<dynamic>> formattedData = await applyLetterCasing(cleanedData);
 
-    // Check if there are any date columns based on classifications
-    bool hasDateColumn = widget.classifications.any((classification) =>
-        classification.contains(3)); // Assuming '3' represents 'date'
+    bool hasDateColumn =
+        widget.classifications.any((classification) => classification[3] == 1);
+    print(hasDateColumn);
 
-    // Only apply date formatting if a date column is present
     if (hasDateColumn) {
       formattedData = await applyDateFormat(formattedData);
     }
@@ -251,6 +249,41 @@ class _IssuesPageState extends State<IssuesPage> {
     // Fallback path for other platforms
     Directory? directory = await getExternalStorageDirectory();
     return directory!.path;
+  }
+
+  void _showDownloadDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Download Confirmation"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "What you see in the preview is what will be downloaded. Please double-check before proceeding.",
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: _fileNameController,
+                decoration: InputDecoration(
+                  labelText: "Enter Filename (without .csv)",
+                ),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _downloadCSV(); // Proceed to download
+                },
+                child: Text("Download File"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -400,16 +433,12 @@ class _IssuesPageState extends State<IssuesPage> {
                     ),
                   );
                 }).toList(),
-                TextField(
-                  controller: _fileNameController,
-                  decoration: InputDecoration(
-                    labelText: "Enter Filename for Download (without .csv)",
-                  ),
-                ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: _downloadCSV,
-                  child: Text("Download CSV"),
+                  onPressed: () {
+                    _showDownloadDialog(context); // Show download confirmation
+                  },
+                  child: Text("Download Cleaned CSV"),
                 ),
                 ElevatedButton(
                   onPressed: () {
