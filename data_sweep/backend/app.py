@@ -12,6 +12,7 @@ from datetime import datetime
 from scipy.stats import zscore
 from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
+import statistics
 
 app = Flask(__name__)
 
@@ -928,6 +929,183 @@ def numerical_missing_values():
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
     
+def generate_chart(column_name, column_data, classification):
+    chart_type = None
+    if classification[0] == 1:
+        chart_type = 'numerical'
+    elif classification[1] == 1:
+        chart_type = 'categorical'
+    elif classification[2] == 1:
+        chart_type = 'non-categorical'
+    elif classification[3] == 1:
+        chart_type = 'date'
+
+    # Create the appropriate plot based on classification
+    fig, ax = plt.subplots()
+
+    if chart_type == 'numerical':
+        # Ensure only valid numeric entries
+        column_data = [
+            float(i) if isinstance(i, (int, float)) else None
+            for i in column_data if i != '' and i is not None
+        ]
+        # Remove any None values
+        column_data = [i for i in column_data if i is not None]
+        
+        ax.hist(column_data, bins=20, edgecolor='black')  # You can adjust the number of bins
+        ax.set_title(f"Numerical Data: {column_name}")
+        ax.set_xlabel('Value')
+        ax.set_ylabel('Frequency')
+
+    elif chart_type == 'categorical':
+        # Count the occurrences of each category
+        category_counts = pd.Series(column_data).value_counts()
+        
+        # Plot as a pie chart
+        ax.pie(category_counts, labels=category_counts.index, autopct='%1.1f%%', startangle=90)
+        ax.set_title(f"Categorical Data: {column_name}")
+        ax.axis('equal')
+
+    elif chart_type == 'non-categorical':
+        # Count the non-empty values and missing (null/empty) values
+        non_empty_values = [val for val in column_data if val != '' and val is not None]
+        missing_values = len(column_data) - len(non_empty_values)
+
+        ax.bar(['Non-Empty', 'Missing'], [len(non_empty_values), missing_values])
+        ax.set_title(f"Non-Categorical Data: {column_name}")
+        ax.set_ylabel('Count')
+
+    elif chart_type == 'date':
+        dates = pd.to_datetime(column_data, errors='coerce')
+        ax.scatter(dates, column_data)  # Use scatter instead of plot
+        ax.set_title(f"Date Data: {column_name}")
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Value')
+
+    # Save the plot to a byte stream
+    img_stream = io.BytesIO()
+    fig.savefig(img_stream, format='png')
+    img_stream.seek(0)
+    plt.close(fig)
+
+    return img_stream
+
+@app.route('/generate-chart', methods=['POST'])
+def generate_chart_endpoint():
+    # Receive JSON data
+    data = request.json.get('data')
+    columns = request.json.get('columns')
+    classifications = request.json.get('classifications')
+    column_name = request.json.get('column_name')
+
+    # Check the structure of 'data'
+    if isinstance(data, str):  # If data is a string, parse it
+        import json
+        data = json.loads(data)
+
+    if data and classifications and columns and column_name:
+        try:
+            column_index = columns.index(column_name)  # Find the index of the column
+        except ValueError:
+            print(f"Column '{column_name}' not found in columns list.")
+            return f"Column '{column_name}' not found in the columns list", 400
+        
+        # Ensure that 'csv_data' is a list of lists
+        column_data = [row[column_index] for row in data.get("csv_data", [])]
+        classification = classifications[column_index]
+
+        # Generate the chart
+        img = generate_chart(column_name, column_data, classification)
+        return send_file(img, mimetype='image/png')
+    else:
+        print("Missing parameters.")
+        return "Missing parameters", 400
+
+@app.route('/calculate-statistics', methods=['POST'])
+def calculate_statistics():
+    # Ensure that the data is parsed as JSON into a Python dictionary
+    data = request.json.get('data')  # Assuming the data is under 'csv_data'
+    columns = request.json.get('columns')
+    classifications = request.json.get('classifications')
+    column_name = request.json.get('column_name')
+    # Ensure the column_name exists in the columns list
+    if column_name not in columns:
+        return jsonify({"error": f"Column '{column_name}' not found in columns list"}), 400
+
+    # Find the index of the column in the columns list
+    column_index = columns.index(column_name)
+
+    column_data = [row[column_index] for row in data[1:]] 
+
+    classification = classifications[column_index]
+    print("Classification for the column:", classification)
+
+
+    if classification[2] == 1:  # non-categorical
+
+        non_empty_values = [value for value in column_data if value != '' and value is not None]
+        missing_values = len(column_data) - len(non_empty_values)
+        return jsonify({
+            "non_empty_count": len(non_empty_values),
+            "missing_count": missing_values
+        })
+    
+    if classification[3] == 1:  # date
+        # No statistics to calculate for date type
+        return jsonify({
+            "message": "No statistics available for date type."
+        })
+    
+    if classification[0] == 1:  # numerical
+    # Try to convert the column data to numerical values (float), skipping invalid or missing values
+        column_data_filtered = []
+        for value in column_data:
+            try:
+                # Attempt to convert each value to a float, and skip invalid ones
+                numeric_value = float(value)
+                column_data_filtered.append(numeric_value)
+            except (ValueError, TypeError):
+                # Skip invalid values (e.g., strings, None, or empty values)
+                continue
+        
+        # Debugging: Print the filtered data
+        print(f"Filtered numeric column_data: {column_data_filtered}")
+
+        # Check if column_data_filtered is empty after filtering
+        if not column_data_filtered:
+            return jsonify({"error": "No valid numeric data found in column"}), 400
+        
+        # Calculate statistics (mean, median, mode)
+        mean = np.mean(column_data_filtered)
+        median = np.median(column_data_filtered)
+        try:
+            mode = statistics.mode(column_data_filtered)
+        except statistics.StatisticsError:
+            mode = "No unique mode"
+        
+        return jsonify({
+            "mean": mean,
+            "median": median,
+            "mode": mode
+        })
+
+
+    if classification[1] == 1:  # categorical
+        # For categorical data, calculate the mode and count of each unique value
+        mode = statistics.mode(column_data) if column_data else None
+        value_counts = {value: column_data.count(value) for value in set(column_data)}
+        
+        return jsonify({
+            "mode": mode,
+            "value_counts": value_counts
+        })
+    
+    # Default return if no matching classification
+    return jsonify({
+        "error": "Invalid column classification"
+    })
+
+
 if __name__ == '__main__':
 
     app.run(host='0.0.0.0', port=5000, debug=True)

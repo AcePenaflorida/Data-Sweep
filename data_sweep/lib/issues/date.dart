@@ -166,13 +166,19 @@ class _DateIssuePageState extends State<DateIssuePage> {
             // Container with border and padding to display invalid dates
             Container(
               margin: EdgeInsets.symmetric(vertical: 5),
-              padding: EdgeInsets.all(8),
+              padding: EdgeInsets.all(0),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey, width: 1),
                 borderRadius: BorderRadius.circular(8),
               ),
+              constraints: BoxConstraints(
+                maxHeight: 300, // Set your desired maximum height here
+              ),
               child: ListView.builder(
                 shrinkWrap: true, // Allow ListView to take only required space
+                physics: _invalidDates.length > 5
+                    ? AlwaysScrollableScrollPhysics()
+                    : NeverScrollableScrollPhysics(), // Enable scrolling when the list is too large
                 itemCount: _invalidDates.length,
                 itemBuilder: (context, index) {
                   return Padding(

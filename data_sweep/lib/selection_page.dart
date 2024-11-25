@@ -1,5 +1,6 @@
 import 'package:data_sweep/outliers.dart';
 import 'package:data_sweep/scaling_page.dart';
+import 'package:data_sweep/visualization_page.dart';
 import 'package:flutter/material.dart';
 import 'issues_page.dart';
 
@@ -143,7 +144,7 @@ class SelectionPages extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => FeatureScalingPage(
+                    builder: (context) => VisualizationPage(
                       csvData: csvData,
                       columns: columns,
                       classifications: classifications,
@@ -156,13 +157,13 @@ class SelectionPages extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      "Data Reduction",
+                      "Data Visualization",
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 10),
                     Text(
-                      "Reduction things",
+                      "Visualize your Data",
                       textAlign: TextAlign.center,
                     ),
                   ],
