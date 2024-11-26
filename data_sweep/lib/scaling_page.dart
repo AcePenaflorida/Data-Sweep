@@ -4,6 +4,7 @@ import 'package:csv/csv.dart';
 import 'package:data_sweep/config.dart';
 import 'package:data_sweep/main.dart';
 import 'package:data_sweep/preview_page.dart';
+import 'package:data_sweep/visualization_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -295,6 +296,22 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
                   _showDownloadDialog(context); // Show download confirmation
                 },
                 child: Text("Download Scaled CSV"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VisualizationPage(
+                        csvData: scaledData,
+                        columns: widget.columns,
+                        classifications: widget.classifications,
+                      ),
+                    ),
+                  );
+                },
+                child: Text("Go to Data Visualization"),
               ),
               ElevatedButton(
                 onPressed: () {

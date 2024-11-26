@@ -6,6 +6,7 @@ import 'package:data_sweep/issues/non_categorical.dart';
 import 'package:data_sweep/main.dart';
 import 'package:data_sweep/outliers.dart';
 import 'package:data_sweep/scaling_page.dart';
+import 'package:data_sweep/visualization_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -471,6 +472,22 @@ class _IssuesPageState extends State<IssuesPage> {
                     );
                   },
                   child: Text("Go to Feature Scaling"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VisualizationPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text("Go to Data Visualization"),
                 ),
                 ElevatedButton(
                   onPressed: () {

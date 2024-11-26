@@ -958,6 +958,7 @@ def generate_chart(column_name, column_data, classification):
         ax.set_ylabel('Frequency')
 
     elif chart_type == 'categorical':
+        column_data = column_data[1:]
         # Count the occurrences of each category
         category_counts = pd.Series(column_data).value_counts()
         
@@ -977,10 +978,15 @@ def generate_chart(column_name, column_data, classification):
 
     elif chart_type == 'date':
         dates = pd.to_datetime(column_data, errors='coerce')
-        ax.scatter(dates, column_data)  # Use scatter instead of plot
-        ax.set_title(f"Date Data: {column_name}")
-        ax.set_xlabel('Date')
-        ax.set_ylabel('Value')
+        
+        if dates.isnull().all():
+            ax.text(0.5, 0.5, "No valid dates available", ha='center', va='center', fontsize=12)
+        else:
+            # Use a line plot instead of scatter
+            ax.plot(dates, range(len(dates)), linestyle='-', color='teal', marker='o')
+            ax.set_title(f"Date Data: {column_name}")
+            ax.set_xlabel('Date')
+            ax.set_ylabel('Index')
 
     # Save the plot to a byte stream
     img_stream = io.BytesIO()

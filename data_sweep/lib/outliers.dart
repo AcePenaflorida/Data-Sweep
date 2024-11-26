@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:data_sweep/visualization_page.dart';
 
 class OutliersPage extends StatefulWidget {
   final List<List<dynamic>> csvData;
@@ -652,6 +653,22 @@ class _OutliersPageState extends State<OutliersPage> {
                 );
               },
               child: Text("Go to Feature Scaling"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VisualizationPage(
+                      csvData: cleanedData,
+                      columns: widget.columns,
+                      classifications: widget.classifications,
+                    ),
+                  ),
+                );
+              },
+              child: Text("Go to Data Visualization"),
             ),
             ElevatedButton(
               onPressed: () {
