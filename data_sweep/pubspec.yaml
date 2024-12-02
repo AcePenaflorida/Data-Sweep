@@ -45,6 +45,7 @@ dependencies:
 
 dev_dependencies:
   flutter_launcher_icons: ^0.9.2
+  
 
 flutter_icons:
   android: true
@@ -103,3 +104,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  
