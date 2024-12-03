@@ -28,23 +28,21 @@ class HomePage extends StatelessWidget {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.table_chart, size: 28), // Icon on app bar
-            SizedBox(width: 8),
             Text(
               "DATA SWEEP",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 25,
+                fontSize: 28,
                 color: Colors.white,
               ),
             ),
           ],
         ),
-        backgroundColor: const Color.fromARGB(255, 71, 134, 74), // Green app bar background
-        automaticallyImplyLeading: false, // Disable back button
+        backgroundColor: const Color.fromARGB(255, 61, 126, 64),
+        automaticallyImplyLeading: false, 
       ),
       body: Container(
-        color: Color(0xFFEAF0E4), // Light greenish background
+        color: const Color.fromARGB(255, 212, 216, 207),
         padding: EdgeInsets.all(16),
         child: Center(
           child: Column(
@@ -98,7 +96,7 @@ class HomePage extends StatelessWidget {
                   child: Container(
                     width: 270,
                     height: 200,
-                    color: Color(0xFFEAF0E4),
+                    color: const Color.fromARGB(255, 212, 216, 207),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -153,10 +151,10 @@ class DashedBorderPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..color = const Color.fromARGB(137, 0, 0, 0)
-      ..strokeWidth = 3.0
+      ..strokeWidth = 4
       ..style = PaintingStyle.stroke;
-    double dashWidth = 10;
-    double dashSpace = 7;
+    double dashWidth = 14;
+    double dashSpace = 8;
 
     // Define the rounded rectangle with border radius
     final RRect roundedRect = RRect.fromRectAndRadius(
