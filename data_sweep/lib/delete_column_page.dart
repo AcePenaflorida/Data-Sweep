@@ -127,9 +127,7 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
         backgroundColor: const Color.fromARGB(255, 61, 126, 64),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-          size: 30,
-          color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, size: 30, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -159,7 +157,8 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                         Icon(
                           Icons.description, // File icon
                           size: 40, // Icon size
-                          color: const Color.fromARGB(255, 17, 17, 17), // Match text color
+                          color: const Color.fromARGB(
+                              255, 17, 17, 17), // Match text color
                         ),
                         const SizedBox(width: 6),
                         Column(
@@ -215,7 +214,8 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                       text: "Before we delve deeper, ",
                       style: TextStyle(
                         fontSize: 25,
-                        fontWeight: FontWeight.normal, // Normal weight for this part
+                        fontWeight:
+                            FontWeight.normal, // Normal weight for this part
                         fontFamily: 'Roboto',
                         color: Colors.black,
                       ),
@@ -224,7 +224,8 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                       text: "do you want to remove any unnecessary columns?",
                       style: TextStyle(
                         fontSize: 25,
-                        fontWeight: FontWeight.bold, // Bold weight for this part
+                        fontWeight:
+                            FontWeight.bold, // Bold weight for this part
                         fontFamily: 'Roboto',
                         color: Colors.black,
                       ),
