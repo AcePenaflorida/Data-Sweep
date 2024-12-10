@@ -67,7 +67,28 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
     bool hasMissingValues = widget.issues.contains("Missing Values");
 
     return Scaffold(
-      appBar: AppBar(title: Text("Non-Categorical: ${widget.columnName}")),
+      appBar: AppBar(
+        title: Text(
+          "Non-Categorical: ${widget.columnName}",
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold,
+            fontSize: 28,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 61, 126, 64),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios,
+          size: 30,
+          color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
