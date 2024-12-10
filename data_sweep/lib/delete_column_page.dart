@@ -22,6 +22,9 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
   List<String> columns = [];
   List<bool> selectedColumns = [];
   List<List<dynamic>> csvData = [];
+  double scaleFactor1 =
+      1.0; // For the scaling effect of the "Confirm & Proceed" button
+  double scaleFactor2 = 1.0; // For the scaling effect of the "Cancel" button
 
   @override
   void initState() {
@@ -29,7 +32,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
     _loadColumns();
   }
 
-  // Function to load CSV columns and data
   void _loadColumns() async {
     try {
       final file = File(widget.filePath);
@@ -50,7 +52,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
     }
   }
 
-  // Function to get file size in a human-readable format
   String _getFileSize(String filePath) {
     final file = File(filePath);
     final bytes = file.lengthSync();
@@ -65,7 +66,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
     }
   }
 
-  // Function to delete selected columns
   Future<List<List<dynamic>>> deleteColumns() async {
     try {
       List<String> columnsToRemove = selectedColumns
@@ -119,7 +119,7 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.bold,
-            fontSize: 28,
+            fontSize: 24, // Reduced font size
             color: Colors.white,
           ),
         ),
@@ -127,72 +127,79 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
         backgroundColor: const Color.fromARGB(255, 61, 126, 64),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 30, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, size: 24, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
       ),
       body: Container(
-        color: const Color.fromARGB(255, 212, 216, 207),
+        color: const Color.fromARGB(255, 229, 234, 222),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // File name and preview button
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0), // Reduced padding
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius:
+                      BorderRadius.circular(6), // Smaller border radius
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.description, // File icon
-                          size: 40, // Icon size
-                          color: const Color.fromARGB(
-                              255, 17, 17, 17), // Match text color
-                        ),
-                        const SizedBox(width: 6),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              p.basename(widget.filePath),
-                              style: const TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Roboto',
-                              ),
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.description,
+                            size: 30, // Reduced icon size
+                            color: const Color.fromARGB(255, 17, 17, 17),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  p.basename(widget.filePath),
+                                  style: const TextStyle(
+                                    fontSize: 16, // Reduced font size
+                                    fontFamily: 'Roboto',
+                                  ),
+                                  maxLines:
+                                      1, // Allows wrapping for longer text
+                                  overflow: TextOverflow
+                                      .ellipsis, // Handles overflow gracefully
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _getFileSize(widget.filePath),
+                                  style: const TextStyle(
+                                    fontSize: 12, // Reduced font size
+                                    fontFamily: 'Roboto',
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _getFileSize(widget.filePath),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontFamily: 'Roboto',
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.remove_red_eye),
+                      icon: const Icon(Icons.remove_red_eye, size: 24),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PreviewPage(
-                              csvData: csvData, // Pass CSV data
+                              csvData: csvData,
                               fileName: p.basename(widget.filePath),
                             ),
                           ),
@@ -204,83 +211,69 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
               ),
             ),
 
-            // Instruction text
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "Before we delve deeper, ",
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight:
-                            FontWeight.normal, // Normal weight for this part
-                        fontFamily: 'Roboto',
-                        color: Colors.black,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "do you want to remove any unnecessary columns?",
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight:
-                            FontWeight.bold, // Bold weight for this part
-                        fontFamily: 'Roboto',
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // "COLUMNS" label
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                "COLUMNS",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontFamily: 'Roboto',
-                  color: Colors.black,
+            // Instructions
+            Center(
+              child: const Padding(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 12.0), // Reduced padding
+                child: Text(
+                  "Do you want to remove any unnecessary columns?",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Roboto',
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center, // Center-align the text
                 ),
               ),
             ),
 
             const SizedBox(height: 8),
 
+            // "COLUMNS" label
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.0),
+              child: Text(
+                "COLUMNS",
+                style: TextStyle(
+                  fontSize: 18, // Reduced font size
+                  fontFamily: 'Roboto',
+                  color: Colors.black,
+                ),
+              ),
+            ),
+
             // Column list
             Expanded(
               child: ListView.builder(
                 itemCount: columns.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    minVerticalPadding: 0,
-                    horizontalTitleGap: 0,
-                    leading: Transform.scale(
-                      scale: 0.8,
-                      child: Checkbox(
-                        value: selectedColumns[index],
-                        activeColor: const Color.fromARGB(255, 61, 126, 64),
-                        checkColor: Colors.white,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            selectedColumns[index] = value ?? false;
-                          });
-                        },
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 0), // Reduce spacing
+                    child: ListTile(
+                      dense: true, // Reduces the overall height of the ListTile
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      minVerticalPadding: 0, // No extra vertical padding
+                      horizontalTitleGap: 0, // Closer alignment of the title
+                      leading: Transform.scale(
+                        scale: 1,
+                        child: Checkbox(
+                          value: selectedColumns[index],
+                          activeColor: const Color.fromARGB(255, 61, 126, 64),
+                          checkColor: Colors.white,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              selectedColumns[index] = value ?? false;
+                            });
+                          },
+                        ),
                       ),
-                    ),
-                    title: Padding(
-                      padding: const EdgeInsets.only(bottom: 0),
-                      child: Text(
+                      title: Text(
                         columns[index],
                         style: const TextStyle(
-                          fontSize: 23,
+                          fontSize: 16, // Reduced font size
                           fontFamily: 'Roboto',
                           color: Colors.black,
                         ),
@@ -293,79 +286,131 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
 
             // Buttons
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0), // Reduced padding
               child: Column(
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        List<List<dynamic>> updatedCsvData =
-                            await deleteColumns();
-                        if (updatedCsvData.isNotEmpty) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ClassificationPage(
-                                csvData: updatedCsvData,
-                                fileName: p.basename(widget.filePath),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 61, 126, 64),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        "Remove Selected Columns",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Roboto',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
+                  GestureDetector(
+                    onTapDown: (_) {
+                      setState(() {
+                        scaleFactor1 = 0.95; // Scale down on tap for button 1
+                      });
+                    },
+                    onTapUp: (_) {
+                      setState(() {
+                        scaleFactor1 = 1.0; // Reset scale for button 1
+                      });
+                    },
+                    onTapCancel: () {
+                      setState(() {
+                        scaleFactor1 = 1.0; // Reset scale for button 1
+                      });
+                    },
+                    onTap: () async {
+                      final updatedCsvData = await deleteColumns();
+                      if (updatedCsvData.isNotEmpty) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => ClassificationPage(
-                              csvData: csvData,
+                              csvData: updatedCsvData,
                               fileName: p.basename(widget.filePath),
                             ),
                           ),
                         );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                            color: Color.fromARGB(255, 61, 126, 64), width: 2),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      }
+                    },
+                    child: Transform.scale(
+                      scale: scaleFactor1,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 20,
                         ),
-                      ),
-                      child: const Text(
-                        "Skip Step",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Roboto',
-                          color: Color.fromARGB(255, 61, 126, 64),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 61, 126, 64),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          "Confirm & Proceed",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTapDown: (_) {
+                      setState(() {
+                        scaleFactor2 =
+                            0.95; // Scale down on tap for Skip Step button
+                      });
+                    },
+                    onTapUp: (_) {
+                      setState(() {
+                        scaleFactor2 = 1.0; // Reset scale for Skip Step button
+                      });
+                    },
+                    onTapCancel: () {
+                      setState(() {
+                        scaleFactor2 = 1.0; // Reset scale for Skip Step button
+                      });
+                    },
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ClassificationPage(
+                            csvData: csvData,
+                            fileName: p.basename(widget.filePath),
+                          ),
+                        ),
+                      );
+                    },
+                    child: Transform.scale(
+                      scale: scaleFactor2,
+                      child: SizedBox(
+                        width: double
+                            .infinity, // Make the button take up the full width
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                                color: Color.fromARGB(255, 61, 126, 64),
+                                width: 2),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ClassificationPage(
+                                  csvData: csvData,
+                                  fileName: p.basename(widget.filePath),
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "Skip Step",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Roboto',
+                              color: Color.fromARGB(255, 61, 126, 64),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
                 ],
               ),
             ),

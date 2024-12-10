@@ -1,7 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'delete_column_page.dart'; // Make sure this is handling different file types
-import 'dart:ui'; // Make sure to import dart:ui
+import 'delete_column_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -52,34 +53,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "DATA SWEEP",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 28,
-                color: Colors.white,
-              ),
-            ),
-          ],
+        title: Text(
+          "DATA SWEEP",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
         ),
         backgroundColor: const Color.fromARGB(255, 61, 126, 64),
-        automaticallyImplyLeading: false,
+        centerTitle: true,
       ),
       body: Container(
-        color: const Color.fromARGB(255, 212, 216, 207),
+        color: const Color.fromARGB(255, 229, 234, 222),
         padding: EdgeInsets.all(16),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 "Welcome to Data Sweep!",
                 style: TextStyle(
-                  fontSize: 27,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -88,32 +83,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 "Click here to upload your dataset\nand to start cleaning.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   color: Colors.black87,
                 ),
               ),
-              SizedBox(height: 24),
-              // Use Stack to layer InkWell on top of CustomPaint
+              SizedBox(height: 20),
               Stack(
                 children: [
-                  // Dashed Border
                   CustomPaint(
-                    painter: DashedBorderPainter(borderRadius: 16.0),
+                    painter: DashedBorderPainter(borderRadius: 12.0),
                     child: Container(
-                      width: 270,
-                      height: 200,
-                      color: Colors.transparent, // Transparent background
+                      width: 200, // Adjusted size
+                      height: 140,
+                      color: Colors.transparent,
                     ),
                   ),
-                  // Interactive InkWell
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
                       onTapDown: (_) {
-                        _scaleController.forward(); // Start pressing animation
+                        _scaleController.forward();
                       },
                       onTapUp: (_) {
-                        _scaleController.reverse(); // Return to normal size
+                        _scaleController.reverse();
                       },
                       onTap: () async {
                         FilePickerResult? result = await FilePicker.platform
@@ -142,22 +134,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         }
                       },
                       splashColor: Colors.green.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                       child: ScaleTransition(
                         scale: _scaleAnimation,
                         child: Container(
-                          width: 270,
-                          height: 200,
+                          width: 200, // Adjusted size
+                          height: 140,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.upload_file,
-                                  size: 40, color: Colors.black87),
-                              SizedBox(height: 10),
+                                  size: 36, color: Colors.black87),
+                              SizedBox(height: 8),
                               Text(
                                 "Upload file",
                                 style: TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black87,
                                 ),
@@ -170,20 +162,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.description,
-                    size: 20,
+                    size: 18,
                     color: Colors.grey[700],
                   ),
                   SizedBox(width: 6),
                   Text(
                     "supported formats: CSV only",
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       color: Colors.grey[700],
                     ),
                   ),
@@ -206,10 +198,11 @@ class DashedBorderPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..color = const Color.fromARGB(137, 0, 0, 0)
-      ..strokeWidth = 4
+      ..strokeWidth = 2 // Smaller border
       ..style = PaintingStyle.stroke;
-    double dashWidth = 14;
-    double dashSpace = 8;
+
+    double dashWidth = 10;
+    double dashSpace = 6;
 
     final RRect roundedRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, size.width, size.height),
