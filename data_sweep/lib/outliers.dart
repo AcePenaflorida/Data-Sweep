@@ -201,7 +201,7 @@ class _OutliersPageState extends State<OutliersPage> {
 
   void showGraphOverlay(BuildContext context, String columnName,
       String outlierStatus, String resolveOutlierMethod) async {
-    List<List<dynamic>> data = widget.csvData;
+    List<List<dynamic>> data = cleanedData;
     Map<String, dynamic> requestPayload = {};
 
     if (outlierStatus == "Not Resolved") {
@@ -272,7 +272,7 @@ class _OutliersPageState extends State<OutliersPage> {
 
   Future<void> getCleanedData(BuildContext context, String columnName,
       String resolveOutlierMethod) async {
-    List<List<dynamic>> data = widget.csvData;
+    List<List<dynamic>> data = cleanedData;
     Map<String, dynamic> requestPayload = {};
 
     requestPayload = {
@@ -622,68 +622,124 @@ class _OutliersPageState extends State<OutliersPage> {
                 ),
               ),
             ),
-
-            // Keep the TextField and buttons for filename and navigation below the table
-            const SizedBox(height: 20),
-            TextField(
-              controller: _fileNameController,
-              decoration: InputDecoration(
-                labelText: "Enter Filename for Download (without .csv)",
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _showDownloadDialog(context);
-              },
-              child: Text("Download CSV"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FeatureScalingPage(
-                      csvData: cleanedData,
-                      columns: widget.columns,
-                      classifications: widget.classifications,
-                    ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
                   ),
-                );
-              },
-              child: Text("Go to Feature Scaling"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => VisualizationPage(
-                      csvData: cleanedData,
-                      columns: widget.columns,
-                      classifications: widget.classifications,
-                    ),
+                  onPressed: () {
+                    _showDownloadDialog(context); // Show download confirmation
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.download,
+                        size: 20.0,
+                      ),
+                      Text(
+                        "Download",
+                        style: TextStyle(
+                          fontSize: 10.0, // Adjust the font size
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              },
-              child: Text("Go to Data Visualization"),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                // Close the current screen
-                Navigator.pop(context);
-
-                // Navigate to the HomePage and remove all previous routes
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                  (Route<dynamic> route) =>
-                      false, // This removes all previous routes
-                );
-              },
-              child: Text("GO BACK TO HOME PAGE"),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FeatureScalingPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(Icons.transform),
+                      Text(
+                        "Scaling",
+                        style: TextStyle(fontSize: 10.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VisualizationPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(Icons.bar_chart),
+                      Text(
+                        "Visualize",
+                        style: TextStyle(fontSize: 10.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                  ),
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                      (Route<dynamic> route) => false,
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(Icons.home),
+                      Text(
+                        "Home",
+                        style: TextStyle(fontSize: 10.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),

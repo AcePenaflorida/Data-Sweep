@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:data_sweep/config.dart';
 import 'package:data_sweep/main.dart';
+import 'package:data_sweep/outliers.dart';
 import 'package:data_sweep/preview_page.dart';
 import 'package:data_sweep/visualization_page.dart';
 import 'package:flutter/material.dart';
@@ -299,7 +300,7 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close dialog
+                  // Close dialog
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -325,6 +326,156 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
                 child: Text("Go Back to Home Page"),
               ),
             ],
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                  ),
+                  onPressed: () {
+                    _showDownloadDialog(context); // Show download confirmation
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.download,
+                        size: 20.0,
+                      ),
+                      Text(
+                        "Download",
+                        style: TextStyle(
+                          fontSize: 10.0, // Adjust the font size
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OutliersPage(
+                          csvData: scaledData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(Icons.filter_list),
+                      Text(
+                        "Outliers",
+                        style: TextStyle(fontSize: 10.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FeatureScalingPage(
+                          csvData: scaledData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(Icons.transform),
+                      Text(
+                        "Scaling",
+                        style: TextStyle(fontSize: 10.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VisualizationPage(
+                          csvData: scaledData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(Icons.bar_chart),
+                      Text(
+                        "Visualize",
+                        style: TextStyle(fontSize: 10.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                  ),
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                      (Route<dynamic> route) => false,
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(Icons.home),
+                      Text(
+                        "Home",
+                        style: TextStyle(fontSize: 10.0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

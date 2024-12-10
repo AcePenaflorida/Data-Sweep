@@ -211,20 +211,16 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
               ),
             ),
 
-            // Instructions
-            Center(
-              child: const Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 12.0), // Reduced padding
-                child: Text(
-                  "Do you want to remove any unnecessary columns?",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto',
-                    color: Colors.black,
-                  ),
-                  textAlign: TextAlign.center, // Center-align the text
+            const Padding(
+              padding:
+                  EdgeInsets.symmetric(horizontal: 12.0), // Reduced padding
+              child: Text(
+                "Do you want to remove any unnecessary columns?",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Roboto',
+                  color: Colors.black,
                 ),
               ),
             ),
@@ -243,42 +239,62 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                 ),
               ),
             ),
-
+            const Divider(
+              color: Color.fromARGB(255, 200, 200, 200), // Light gray line
+              thickness: 1, // Thin line
+              indent: 8, // Add some indentation to match the content padding
+              endIndent: 3, // Same as above to align with content
+            ),
             // Column list
             Expanded(
               child: ListView.builder(
                 itemCount: columns.length,
                 itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 0), // Reduce spacing
-                    child: ListTile(
-                      dense: true, // Reduces the overall height of the ListTile
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      minVerticalPadding: 0, // No extra vertical padding
-                      horizontalTitleGap: 0, // Closer alignment of the title
-                      leading: Transform.scale(
-                        scale: 1,
-                        child: Checkbox(
-                          value: selectedColumns[index],
-                          activeColor: const Color.fromARGB(255, 61, 126, 64),
-                          checkColor: Colors.white,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              selectedColumns[index] = value ?? false;
-                            });
-                          },
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0),
+                        child: ListTile(
+                          dense: true,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 0),
+                          minVerticalPadding: 0, // No extra vertical padding
+                          horizontalTitleGap:
+                              0, // Closer alignment of the title
+                          leading: Transform.scale(
+                            scale: 1,
+                            child: Checkbox(
+                              value: selectedColumns[index],
+                              activeColor:
+                                  const Color.fromARGB(255, 61, 126, 64),
+                              checkColor: Colors.white,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  selectedColumns[index] = value ?? false;
+                                });
+                              },
+                            ),
+                          ),
+                          title: Text(
+                            columns[index],
+                            style: const TextStyle(
+                              fontSize: 14, // Reduced font size
+                              fontFamily: 'Roboto',
+                              color: Colors.black,
+                            ),
+                          ),
                         ),
                       ),
-                      title: Text(
-                        columns[index],
-                        style: const TextStyle(
-                          fontSize: 16, // Reduced font size
-                          fontFamily: 'Roboto',
-                          color: Colors.black,
-                        ),
+                      // Thin line between each column
+                      const Divider(
+                        color: Color.fromARGB(
+                            255, 200, 200, 200), // Light gray line
+                        thickness: 1, // Thin line
+                        indent:
+                            8, // Add some indentation to match the content padding
+                        endIndent: 3, // Same as above to align with content
                       ),
-                    ),
+                    ],
                   );
                 },
               ),
@@ -332,7 +348,7 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
-                          "Confirm & Proceed",
+                          "Remove Selected Columns",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,

@@ -466,7 +466,7 @@ def outliers_graph():
             elif method == "Replace with Mean":
                 filtered_outliers = replace_with_mean(filtered_outliers, column_name)
             elif method == "Replace with Median":
-                filtered_ouliters = replace_with_median(filtered_outliers, column_name)
+                filtered_ouliers = replace_with_median(filtered_outliers, column_name)
             
             img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
     

@@ -19,7 +19,7 @@ class PreviewPage extends StatelessWidget {
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.bold,
-            fontSize: 24, // Reduced font size
+            fontSize: 24, // Adjusted font size
             color: Colors.white,
           ),
         ),
@@ -34,8 +34,7 @@ class PreviewPage extends StatelessWidget {
         ),
       ),
       body: Container(
-        color: const Color.fromARGB(
-            255, 229, 234, 222), // Set the background color for the entire body
+        color: const Color.fromARGB(255, 229, 234, 222), // Background color
         child: csvData.isNotEmpty
             ? SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -48,22 +47,37 @@ class PreviewPage extends StatelessWidget {
                     ),
                     columns: csvData.first
                         .map((column) => DataColumn(
-                              label: Text(
-                                column.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white, // White text color
-                                  fontWeight: FontWeight.bold, // Bold text
+                              label: Container(
+                                width: 150, // Set a width for the column title
+                                child: Text(
+                                  column.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white, // White text color
+                                    fontWeight: FontWeight.bold, // Bold text
+                                  ),
+                                  softWrap: true, // Allow column title to wrap
+                                  overflow:
+                                      TextOverflow.ellipsis, // Handle overflow
                                 ),
                               ),
                             ))
                         .toList(),
                     rows: csvData.skip(1).map((row) {
                       return DataRow(
-                        cells: row
-                            .map((cell) => DataCell(
-                                  Text(cell.toString()),
-                                ))
-                            .toList(),
+                        cells: row.map((cell) {
+                          return DataCell(
+                            Container(
+                              width:
+                                  150, // Set width for data cell to align with the title
+                              child: Text(
+                                cell.toString(),
+                                softWrap: true, // Allow text to wrap
+                                overflow:
+                                    TextOverflow.ellipsis, // Handle overflow
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       );
                     }).toList(),
                   ),
