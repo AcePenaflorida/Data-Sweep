@@ -69,6 +69,11 @@ flutter_icons:
 flutter:
   assets:
     - assets/Grizz.jpg
+    - assets/DataCleaning.png
+    - assets/DataVisualization.png
+    - assets/FeatureScaling.png
+    - assets/HandleOutliers.png
+    
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
