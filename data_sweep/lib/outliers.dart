@@ -31,7 +31,7 @@ class _OutliersPageState extends State<OutliersPage> {
   final _fileNameController = TextEditingController();
   late List<TextEditingController> textControllers;
   late List<String> handleOutliersOptions = [
-    'Remove Rows',
+    'Remove',
     'Cap and Floor',
     'Replace with Mean',
     'Replace with Median'

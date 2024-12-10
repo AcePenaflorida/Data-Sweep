@@ -292,39 +292,6 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
                 child: Text("Scale and Proceed"),
               ),
               const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  _showDownloadDialog(context); // Show download confirmation
-                },
-                child: Text("Download Scaled CSV"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  // Close dialog
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => VisualizationPage(
-                        csvData: scaledData,
-                        columns: widget.columns,
-                        classifications: widget.classifications,
-                      ),
-                    ),
-                  );
-                },
-                child: Text("Go to Data Visualization"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                    (Route<dynamic> route) => false,
-                  );
-                },
-                child: Text("Go Back to Home Page"),
-              ),
             ],
           ],
         ),
