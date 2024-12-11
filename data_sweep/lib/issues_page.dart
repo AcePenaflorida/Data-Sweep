@@ -491,7 +491,7 @@ class _IssuesPageState extends State<IssuesPage> {
                   },
                   child: Column(
                     children: [
-                      Icon(Icons.filter_list),
+                      Icon(Icons.scatter_plot),
                       Text(
                         "Outliers",
                         style: TextStyle(fontSize: 10.0),
