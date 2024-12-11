@@ -177,297 +177,324 @@ class _CategoricalPageState extends State<CategoricalPage> {
         ),
       ),
       backgroundColor: const Color.fromARGB(255, 212, 216, 207),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!missingValuesResolved) ...[
-              Center(
-                child: Text(
-                  'Column: ${widget.columnName}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF3D7E40), // Green color for text
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!missingValuesResolved) ...[
+                Center(
+                  child: Text(
+                    'Column: ${widget.columnName}',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF3D7E40), // Green color for text
+                    ),
                   ),
                 ),
-              ),
-              Text(
-                'Resolve Missing Values',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Column(
-                children: [
-                  RadioListTile<String>(
-                    title: const Text("Remove Rows with Missing Values"),
-                    value: "Remove Rows",
-                    groupValue: missingValueOption,
-                    onChanged: (value) {
-                      setState(() {
-                        missingValueOption = value;
-                      });
-                    },
-                  ),
-                  RadioListTile<String>(
-                    title: const Text("Fill with Mode"),
-                    value: "Fill with Mode",
-                    groupValue: missingValueOption,
-                    onChanged: (value) {
-                      setState(() {
-                        missingValueOption = value;
-                      });
-                    },
-                  ),
-                  RadioListTile<String>(
-                    title: const Text("Fill with Custom Value"),
-                    value: "Fill with",
-                    groupValue: missingValueOption,
-                    onChanged: (value) {
-                      setState(() {
-                        missingValueOption = value;
-                      });
-                    },
-                  ),
-                  if (missingValueOption == "Fill with")
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: TextField(
-                        controller: fillValueController,
-                        decoration: InputDecoration(
-                          labelText: "Enter value",
-                          border: OutlineInputBorder(),
+                const SizedBox(height: 16.0),
+                Text(
+                  'Resolve Missing Values',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Column(
+                  children: [
+                    RadioListTile<String>(
+                      title: const Text("Remove Rows with Missing Values"),
+                      value: "Remove Rows",
+                      groupValue: missingValueOption,
+                      activeColor: const Color.fromARGB(255, 61, 126, 64),
+                      onChanged: (value) {
+                        setState(() {
+                          missingValueOption = value;
+                        });
+                      },
+                    ),
+                    RadioListTile<String>(
+                      title: const Text("Fill with Mode"),
+                      value: "Fill with Mode",
+                      groupValue: missingValueOption,
+                      activeColor: const Color.fromARGB(255, 61, 126, 64),
+                      onChanged: (value) {
+                        setState(() {
+                          missingValueOption = value;
+                        });
+                      },
+                    ),
+                    RadioListTile<String>(
+                      title: const Text("Fill with Custom Value"),
+                      value: "Fill with",
+                      groupValue: missingValueOption,
+                      activeColor: const Color.fromARGB(255, 61, 126, 64),
+                      onChanged: (value) {
+                        setState(() {
+                          missingValueOption = value;
+                        });
+                      },
+                    ),
+                    if (missingValueOption == "Fill with")
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: TextField(
+                          controller: fillValueController,
+                          decoration: InputDecoration(
+                            labelText: "Enter value",
+                            border: OutlineInputBorder(),
+                          ),
                         ),
                       ),
+                    RadioListTile<String>(
+                      title: const Text("Leave Blank"),
+                      value: "Leave Blank",
+                      groupValue: missingValueOption,
+                      activeColor: const Color.fromARGB(255, 61, 126, 64),
+                      onChanged: (value) {
+                        setState(() {
+                          missingValueOption = value;
+                        });
+                      },
                     ),
-                  RadioListTile<String>(
-                    title: const Text("Leave Blank"),
-                    value: "Leave Blank",
-                    groupValue: missingValueOption,
-                    onChanged: (value) {
-                      setState(() {
-                        missingValueOption = value;
-                      });
+                  ],
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        if (missingValueOption == "Leave Blank") {
+                          setState(() {
+                            missingValuesResolved = true;
+                          });
+                        } else {
+                          List<List<dynamic>> resolvedData =
+                              await resolveMissingValues();
+                          setState(() {
+                            _reformattedDataset = resolvedData;
+                            missingValuesResolved = true;
+                          });
+                          Navigator.pop(context, _reformattedDataset);
+                        }
+                      } catch (e) {
+                        print("Error resolving missing values: $e");
+                      }
                     },
-                  ),
-                ],
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  try {
-                    if (missingValueOption == "Leave Blank") {
-                      setState(() {
-                        missingValuesResolved = true;
-                      });
-                    } else {
-                      List<List<dynamic>> resolvedData =
-                          await resolveMissingValues();
-                      setState(() {
-                        _reformattedDataset = resolvedData;
-                        missingValuesResolved = true;
-                      });
-                      Navigator.pop(context, _reformattedDataset);
-                    }
-                  } catch (e) {
-                    print("Error resolving missing values: $e");
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3D7E40),
-                ),
-                child: const Text("Resolve Missing Values"),
-              ),
-            ],
-            if (missingValuesResolved) ...[
-              Center(
-                child: Text(
-                  'Column: ${widget.columnName}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF3D7E40), // Green color for text
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3D7E40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(12), // Set the radius here
+                      ),
+                    ),
+                    child: const Text(
+                      "Resolve",
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Standardize Categorical Values',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 6),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Table(
-                    border: TableBorder.all(),
-                    children: [
-                      // Header Row
-                      TableRow(children: [
-                        TableCell(
-                          child: Container(
-                            color: const Color(
-                                0xFF3D7E40), // Green background for "Unique Values"
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Text(
-                                  "Unique Values",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Colors.white, // White text for contrast
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        TableCell(
-                          child: Container(
-                            color: const Color(
-                                0xFF3D7E40), // Green background for "Standardized Value"
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Text(
-                                  "Standardized Value",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Colors.white, // White text for contrast
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ]),
-                      // Data Rows
-                      ...List.generate(uniqueValues.length, (index) {
-                        return TableRow(children: [
+              ],
+              if (missingValuesResolved) ...[
+                Center(
+                  child: Text(
+                    'Column: ${widget.columnName}',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF3D7E40), // Green color for text
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Standardize Categorical Values',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Table(
+                      border: TableBorder.all(),
+                      children: [
+                        // Header Row
+                        TableRow(children: [
                           TableCell(
-                            child: SizedBox(
-                              height: 48, // Set the desired height for the cell
-                              child: Center(
-                                child: Text(
-                                  uniqueValues[index],
-                                  style: const TextStyle(
-                                    color: Colors.black, // Text color
-                                    fontWeight:
-                                        FontWeight.bold, // Make the text bold
-                                  ),
-                                  overflow: TextOverflow
-                                      .ellipsis, // Add ellipsis for overflowed text
-                                  maxLines: 1, // Ensure single-line display
-                                ),
-                              ),
-                            ),
-                          ),
-                          TableCell(
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(
-                                maxWidth: 150, // Adjust maxWidth as needed
-                              ),
-                              child: DropdownButtonFormField<String>(
-                                value: textControllers[index]
-                                    .text, // Set the default value
-                                items: [
-                                  ...uniqueValues.map((value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(
-                                        value,
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontSize:
-                                              14, // Font size will now follow constraints
-                                        ),
-                                        overflow: TextOverflow
-                                            .ellipsis, // Ensure text does not overflow
-                                        maxLines: 1, // Limit to one line
-                                      ),
-                                    );
-                                  }).toList(),
-                                  const DropdownMenuItem<String>(
-                                    value: 'None', // Adding "None" as an option
-                                    child: Text(
-                                      'None',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
+                            child: Container(
+                              color: const Color(
+                                  0xFF3D7E40), // Green background for "Unique Values"
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Center(
+                                  child: Text(
+                                    "Unique Values",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors
+                                          .white, // White text for contrast
                                     ),
                                   ),
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    textControllers[index].text = value!;
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: const Color.fromARGB(0, 255, 255,
-                                      255), // Background color of the dropdown field
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 2),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                        color:
-                                            Color.fromARGB(0, 158, 158, 158)),
-                                  ),
                                 ),
-                                style: const TextStyle(
-                                  color: Colors.black, // Default black text
-                                ),
-                                dropdownColor: const Color.fromARGB(255, 229,
-                                    234, 222), // Dropdown menu background color
                               ),
                             ),
                           ),
-                        ]);
-                      }),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                width:
-                    double.infinity, // Make the button take up the full width
-                child: ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      List<String> standardizedValues = textControllers
-                          .map((controller) => controller.text)
-                          .toList();
-                      List<List<dynamic>> standardizedData =
-                          await standardizeValues(
-                              _reformattedDataset, standardizedValues);
-                      Navigator.pop(context, standardizedData);
-                    } catch (e) {
-                      print("Error standardizing categorical values: $e");
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3D7E40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(12), // Set the radius here
+                          TableCell(
+                            child: Container(
+                              color: const Color(
+                                  0xFF3D7E40), // Green background for "Standardized Value"
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Center(
+                                  child: Text(
+                                    "Standardized Value",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors
+                                          .white, // White text for contrast
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ]),
+                        // Data Rows
+                        ...List.generate(uniqueValues.length, (index) {
+                          return TableRow(children: [
+                            TableCell(
+                              child: SizedBox(
+                                height:
+                                    48, // Set the desired height for the cell
+                                child: Center(
+                                  child: Text(
+                                    uniqueValues[index],
+                                    style: const TextStyle(
+                                      color: Colors.black, // Text color
+                                      fontWeight:
+                                          FontWeight.bold, // Make the text bold
+                                    ),
+                                    overflow: TextOverflow
+                                        .ellipsis, // Add ellipsis for overflowed text
+                                    maxLines: 1, // Ensure single-line display
+                                  ),
+                                ),
+                              ),
+                            ),
+                            TableCell(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 150, // Adjust maxWidth as needed
+                                ),
+                                child: DropdownButtonFormField<String>(
+                                  value: textControllers[index]
+                                      .text, // Set the default value
+                                  items: [
+                                    ...uniqueValues.map((value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(
+                                          value,
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize:
+                                                14, // Font size will now follow constraints
+                                          ),
+                                          overflow: TextOverflow
+                                              .ellipsis, // Ensure text does not overflow
+                                          maxLines: 1, // Limit to one line
+                                        ),
+                                      );
+                                    }).toList(),
+                                    const DropdownMenuItem<String>(
+                                      value:
+                                          'None', // Adding "None" as an option
+                                      child: Text(
+                                        'None',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      textControllers[index].text = value!;
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: const Color.fromARGB(0, 255, 255,
+                                        255), // Background color of the dropdown field
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                          color:
+                                              Color.fromARGB(0, 158, 158, 158)),
+                                    ),
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black, // Default black text
+                                  ),
+                                  dropdownColor: const Color.fromARGB(
+                                      255,
+                                      229,
+                                      234,
+                                      222), // Dropdown menu background color
+                                ),
+                              ),
+                            ),
+                          ]);
+                        }),
+                      ],
                     ),
                   ),
-                  child: const Text(
-                    "Standardize Values",
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.white,
+                ),
+                SizedBox(
+                  width:
+                      double.infinity, // Make the button take up the full width
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        List<String> standardizedValues = textControllers
+                            .map((controller) => controller.text)
+                            .toList();
+                        List<List<dynamic>> standardizedData =
+                            await standardizeValues(
+                                _reformattedDataset, standardizedValues);
+                        Navigator.pop(context, standardizedData);
+                      } catch (e) {
+                        print("Error standardizing categorical values: $e");
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3D7E40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(12), // Set the radius here
+                      ),
+                    ),
+                    child: const Text(
+                      "Standardize Values",
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
