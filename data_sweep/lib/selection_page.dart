@@ -28,7 +28,7 @@ class SelectionPages extends StatelessWidget {
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.bold,
-            fontSize: 24,
+            fontSize: 28,
             color: Colors.white,
           ),
         ),
@@ -36,180 +36,184 @@ class SelectionPages extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255, 61, 126, 64),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 24, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios,
+          size: 30,
+          color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
       ),
       body: Container(
-        color: const Color.fromARGB(255, 229, 234, 222),
-        child: Center(
-          // This centers the entire content
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 30.0),
-            child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center, // Center the content vertically
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // Center the content horizontally
-              children: [
-                Text(
-                  "Select an action for the file",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "We recommend starting with data cleaning!",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 10),
-                _buildActionButton(
-                  context,
-                  "Data Cleaning",
-                  "Clean your data by fixing inconsistencies for accurate analysis.",
-                  Icons.cleaning_services,
-                  const Color.fromARGB(255, 61, 126, 64),
-                  () {
-                    Navigator.push(
+        color: const Color.fromARGB(255, 212, 216, 207),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20),
+              Expanded(
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    _buildCard(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => IssuesPage(
-                          csvData: csvData,
-                          columns: columns,
-                          classifications: classifications,
-                          casingSelections: casingSelections,
-                          dateFormats: dateFormats,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: 20),
-                _buildActionButton(
-                  context,
-                  "Outliers",
-                  "Detect and handle outliers to refine your dataset.",
-                  Icons.scatter_plot,
-                  const Color.fromARGB(255, 86, 159, 85),
-                  () {
-                    Navigator.push(
+                      "assets/DataCleaning.png", 
+                      "Fix inconsistencies for accurate analysis.",
+                      "Data Cleaning",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IssuesPage(
+                              csvData: csvData,
+                              columns: columns,
+                              classifications: classifications,
+                              casingSelections: casingSelections,
+                              dateFormats: dateFormats,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildCard(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => OutliersPage(
-                          csvData: csvData,
-                          columns: columns,
-                          classifications: classifications,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: 20),
-                _buildActionButton(
-                  context,
-                  "Feature Scaling",
-                  "Normalize your data for better model performance.",
-                  Icons.equalizer_outlined,
-                  const Color.fromARGB(255, 61, 126, 64),
-                  () {
-                    Navigator.push(
+                      "assets/HandleOutliers.png",
+                      "Detect and handle outliers to refine your dataset.",
+                      "Outliers",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OutliersPage(
+                              csvData: csvData,
+                              columns: columns,
+                              classifications: classifications,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildCard(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => FeatureScalingPage(
-                          csvData: csvData,
-                          columns: columns,
-                          classifications: classifications,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: 20),
-                _buildActionButton(
-                  context,
-                  "Data Visualization",
-                  "Visualize your Data",
-                  Icons.insert_chart,
-                  const Color.fromARGB(255, 86, 159, 85),
-                  () {
-                    Navigator.push(
+                      "assets/FeatureScaling.png", 
+                      "Normalize your data for better model performance.",
+                      "Feature Scaling",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FeatureScalingPage(
+                              csvData: csvData,
+                              columns: columns,
+                              classifications: classifications,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildCard(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => VisualizationPage(
-                          csvData: csvData,
-                          columns: columns,
-                          classifications: classifications,
-                        ),
-                      ),
-                    );
-                  },
+                      "assets/DataVisualization.png",
+                      "Visualize your data.",
+                      "Data Visualization",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VisualizationPage(
+                              csvData: csvData,
+                              columns: columns,
+                              classifications: classifications,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildActionButton(
+  Widget _buildCard(
     BuildContext context,
-    String title,
+    String imagePath,
     String description,
-    IconData icon,
-    Color color,
+    String title,
     VoidCallback onPressed,
   ) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 5,
-        backgroundColor: color, // Use backgroundColor instead of primary
-        minimumSize: Size(double.infinity, 80),
-      ),
-      onPressed: onPressed,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Icon(icon, size: 30, color: Colors.white),
-          SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 1),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 13, // Smaller font size for description
-                    fontWeight:
-                        FontWeight.w400, // Normal weight for description
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.start,
-                ),
-              ],
-            ),
+    return Container(
+      width: 320,
+      margin: EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Color(0xFF999999)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(2, 2),
           ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              imagePath,
+              height: 300,
+              fit: BoxFit.contain,
+            ),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              description,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: onPressed,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 61, 126, 64),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              child: const Text(
+                "Select",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Roboto',
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
