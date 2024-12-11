@@ -130,7 +130,7 @@ class _DateIssuePageState extends State<DateIssuePage> {
           "Date Issues in ${widget.columnName}",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 22,
             color: Colors.white,
           ),
         ),
@@ -158,76 +158,82 @@ class _DateIssuePageState extends State<DateIssuePage> {
             Text(
               "Expected Format: ${_invalidDates.isNotEmpty ? _invalidDates[0]['expected_format'] : 'N/A'}",
               style: const TextStyle(
-                  fontSize: 13, fontStyle: FontStyle.italic, color: Color.fromARGB(255, 136, 136, 136)),
+                  fontSize: 13,
+                  fontStyle: FontStyle.italic,
+                  color: Color.fromARGB(255, 136, 136, 136)),
             ),
             const SizedBox(height: 10),
             Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.grey.shade300, width: 1),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 5,
-                  ),
-                ],
-              ),
-              child: ListView.builder(
-                itemCount: _invalidDates.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          bottom: BorderSide(color: Colors.grey.shade300, width: 0.5),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.warning_amber_rounded,
-                            color: Colors.redAccent,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.shade300, width: 1),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 5,
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  itemCount: _invalidDates.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border(
+                            bottom: BorderSide(
+                                color: Colors.grey.shade300, width: 0.5),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "${_invalidDates[index]['invalid_date']}",
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.black,
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.redAccent,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                "${_invalidDates[index]['invalid_date']}",
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
             const SizedBox(height: 16),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: double.infinity, // Make the button width match the container width
+                  width: double
+                      .infinity, // Make the button width match the container width
                   child: ElevatedButton.icon(
                     onPressed: _reformatColumn,
                     icon: const Icon(Icons.delete_forever),
                     label: const Text("Delete Invalid Dates"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3D7E40),
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 20),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // Reduced border radius
+                        borderRadius:
+                            BorderRadius.circular(10), // Reduced border radius
                       ),
                     ),
                   ),
@@ -242,12 +248,17 @@ class _DateIssuePageState extends State<DateIssuePage> {
                     icon: const Icon(Icons.cancel),
                     label: const Text("Cancel"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 212, 216, 207), // Same as Scaffold's background
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                      foregroundColor: const Color(0xFF3D7E40), // White text color
-                      side: BorderSide(color: const Color(0xFF3D7E40), width: 2),
+                      backgroundColor: const Color.fromARGB(
+                          255, 212, 216, 207), // Same as Scaffold's background
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 20),
+                      foregroundColor:
+                          const Color(0xFF3D7E40), // White text color
+                      side:
+                          BorderSide(color: const Color(0xFF3D7E40), width: 2),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // Reduced border radius
+                        borderRadius:
+                            BorderRadius.circular(10), // Reduced border radius
                       ),
                     ),
                   ),

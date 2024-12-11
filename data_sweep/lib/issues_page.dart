@@ -477,7 +477,6 @@ class _IssuesPageState extends State<IssuesPage> {
                     padding: EdgeInsets.zero, // No padding for this button
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -508,7 +507,6 @@ class _IssuesPageState extends State<IssuesPage> {
                     padding: EdgeInsets.zero, // No padding for this button
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
                     Navigator.push(
                       context,
                       MaterialPageRoute(

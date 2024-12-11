@@ -333,7 +333,6 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
                     padding: EdgeInsets.zero, // No padding for this button
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
                     Navigator.push(
                       context,
                       MaterialPageRoute(

@@ -27,18 +27,17 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
   void initState() {
     super.initState();
     _reformattedData = widget.csvData;
-    // Debug logs
     print("Column Name: ${widget.columnName}");
     print("Issues: ${widget.issues}");
     print("CSV Data: ${widget.csvData}");
   }
 
   Future<List<List<dynamic>>> resolveIssue() async {
-    var uri = Uri.parse('$baseURL/numerical_missing_values'); // Backend route
+    var uri = Uri.parse('$baseURL/numerical_missing_values');
 
     Map<String, dynamic> requestData = {
       'column': widget.columnName,
-      'action': selectedOption, // Selected action
+      'action': selectedOption,
       'fillValue': selectedOption == "Fill/Replace with Custom Value"
           ? customValueController.text
           : null,
@@ -50,32 +49,11 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
       body: json.encode(requestData),
       headers: {'Content-Type': 'application/json'},
     );
-    print("Response Status: ${response.statusCode}");
-
     if (response.statusCode == 200) {
-      final resolvedData = List<List<dynamic>>.from(json.decode(response.body));
-      print(
-          "Reformatted Data: $resolvedData"); // Print resolved data to console
-      return resolvedData;
+      return List<List<dynamic>>.from(json.decode(response.body));
     } else {
       throw Exception('Failed to resolve issue');
     }
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Error"),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("OK"),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -84,7 +62,22 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
         widget.issues.contains("Non-Numerical");
 
     return Scaffold(
-      appBar: AppBar(title: Text("Numerical: ${widget.columnName}")),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          "Numerical",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF3D7E40),
+      ),
+      backgroundColor: const Color.fromARGB(255, 212, 216, 207),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -92,22 +85,35 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
           children: [
             Center(
               child: Text(
-                '${widget.columnName}',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                'Column: ${widget.columnName}',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3D7E40),
+                ),
               ),
             ),
             const SizedBox(height: 16.0),
             if (widget.issues.isEmpty)
-              Center(
-                child: Text(
-                  "No issues found. Yehey!",
-                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    "No issues found. Yehey!",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                      color: Color.fromARGB(255, 136, 136, 136),
+                    ),
+                  ),
                 ),
               )
             else if (hasMissingValues) ...[
               Text(
-                'Missing Values / Non-Numerical',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                'Missing or Non-Numerical Values',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Column(
                 children: [
@@ -156,16 +162,14 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: TextField(
                         controller: customValueController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: "Enter custom value",
                           border: OutlineInputBorder(),
                         ),
-                        keyboardType: TextInputType.number,
                       ),
                     ),
                   RadioListTile<String>(
-                    title: const Text(
-                        "Remove Rows with Missing/Non-Numerical Values"),
+                    title: const Text("Remove Rows"),
                     value: "Remove Rows",
                     groupValue: selectedOption,
                     onChanged: (value) {
@@ -180,17 +184,30 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
               Center(
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (selectedOption == "Fill/Replace with Custom Value") {
-                      final customValue = customValueController.text;
-                      if (double.tryParse(customValue) == null) {
-                        _showErrorDialog(
-                            "Non-numerical value entered. Please enter a numeric value.");
-                        return;
-                      }
+                    if (selectedOption == "Fill/Replace with Custom Value" &&
+                        double.tryParse(customValueController.text) == null) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("Error"),
+                          content:
+                              const Text("Please enter a valid numeric value."),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("OK"),
+                            ),
+                          ],
+                        ),
+                      );
+                      return;
                     }
                     _reformattedData = await resolveIssue();
                     Navigator.pop(context, _reformattedData);
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3D7E40),
+                  ),
                   child: const Text("Resolve"),
                 ),
               ),

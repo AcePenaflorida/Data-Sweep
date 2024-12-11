@@ -377,8 +377,8 @@ class _OutliersPageState extends State<OutliersPage> {
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close the error dialog
-                  Navigator.of(context).pop(); // Go back to the previous page
+                  Navigator.of(context)
+                      .pop(); // Close the error dialog // Go back to the previous page
                 },
                 child: Text('Go Back'),
               ),

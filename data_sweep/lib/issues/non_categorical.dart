@@ -28,10 +28,6 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
   void initState() {
     super.initState();
     _reformattedData = widget.csvData;
-    // Printing the data received from the previous page (debugging purpose)
-    print("Column Name: ${widget.columnName}");
-    print("Issues: ${widget.issues}");
-    print("CSV Data: ${widget.csvData}");
   }
 
   Future<List<List<dynamic>>> resolveIssue() async {
@@ -39,7 +35,8 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
         '$baseURL/non_categorical_missing_values'); // Update the URL to point to the new route
 
     Map<String, dynamic> requestData = {
-      'column': widget.columnName, // Only needed for "Fill Missing Values" action
+      'column':
+          widget.columnName, // Only needed for "Fill Missing Values" action
       'action': selectedOption, // "Fill with" or "Remove Rows"
       'fillValue': selectedOption == "Fill with"
           ? fillValueController.text
@@ -93,7 +90,7 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
           children: [
             Center(
               child: Text(
-                '${widget.columnName}',
+                'Column: ${widget.columnName}',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -103,13 +100,16 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
             ),
             const SizedBox(height: 16.0),
             if (widget.issues.isEmpty)
-              Center(
-                child: Text(
-                  "No issues found. Yehey!",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontStyle: FontStyle.italic,
-                    color: Color.fromARGB(255, 136, 136, 136), // Light gray text
+              Expanded(
+                child: Center(
+                  child: Text(
+                    "No issues found. Yehey!",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                      color:
+                          Color.fromARGB(255, 136, 136, 136), // Light gray text
+                    ),
                   ),
                 ),
               )
@@ -129,13 +129,16 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
                     value: selectedOption == "Leave Blank",
                     onChanged: (bool? value) {
                       setState(() {
-                        selectedOption = value! ? "Leave Blank" : selectedOption;
+                        selectedOption =
+                            value! ? "Leave Blank" : selectedOption;
                       });
                     },
-                    controlAffinity: ListTileControlAffinity.leading, // Align checkbox on the left
+                    controlAffinity: ListTileControlAffinity
+                        .leading, // Align checkbox on the left
                     activeColor: Color(0xFF3D7E40),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4), // Square checkbox shape
+                      borderRadius:
+                          BorderRadius.circular(4), // Square checkbox shape
                     ),
                   ),
                   CheckboxListTile(
@@ -146,70 +149,79 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
                         selectedOption = value! ? "Fill with" : selectedOption;
                       });
                     },
-                    controlAffinity: ListTileControlAffinity.leading, // Align checkbox on the left
+                    controlAffinity: ListTileControlAffinity
+                        .leading, // Align checkbox on the left
                     activeColor: Color(0xFF3D7E40),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4), // Square checkbox shape
-                    ),
-                  ),
-                  CheckboxListTile(
-                    title: const Text("Remove Rows with Missing Values"),
-                    value: selectedOption == "Remove Rows",
-                    onChanged: (bool? value) {
-                      setState(() {
-                        selectedOption = value! ? "Remove Rows" : selectedOption;
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity.leading, // Align checkbox on the left
-                    activeColor: Color(0xFF3D7E40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4), // Square checkbox shape
+                      borderRadius:
+                          BorderRadius.circular(4), // Square checkbox shape
                     ),
                   ),
                   if (selectedOption == "Fill with")
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: TextField(
                         controller: fillValueController,
                         decoration: InputDecoration(
                           labelText: "Enter value",
                           border: OutlineInputBorder(),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 12),
                         ),
                       ),
                     ),
+                  CheckboxListTile(
+                    title: const Text("Remove Rows with Missing Values"),
+                    value: selectedOption == "Remove Rows",
+                    onChanged: (bool? value) {
+                      setState(() {
+                        selectedOption =
+                            value! ? "Remove Rows" : selectedOption;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity
+                        .leading, // Align checkbox on the left
+                    activeColor: Color(0xFF3D7E40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(4), // Square checkbox shape
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16.0),
               Center(
-              child: Container(
-                width: double.infinity, // Make the button width take up full space
-                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    _reformattedData = await resolveIssue();
-                    Navigator.pop(context, _reformattedData);
-                  },
-                  icon: const Icon(
-                    Icons.check_circle, // Use check_circle icon
-                    size: 22,
-                    color: Colors.white,
-                  ),
-                  label: const Text(
-                    "Resolve",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3D7E40), // Green background
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                    foregroundColor: Colors.white, // White text color
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: double
+                      .infinity, // Make the button width take up full space
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      _reformattedData = await resolveIssue();
+                      Navigator.pop(context, _reformattedData);
+                    },
+                    icon: const Icon(
+                      Icons.check_circle, // Use check_circle icon
+                      size: 22,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      "Resolve",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          const Color(0xFF3D7E40), // Green background
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 20),
+                      foregroundColor: Colors.white, // White text color
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
+              )
             ]
           ],
         ),
