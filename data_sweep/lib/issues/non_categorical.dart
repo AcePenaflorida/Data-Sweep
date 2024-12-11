@@ -39,8 +39,7 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
         '$baseURL/non_categorical_missing_values'); // Update the URL to point to the new route
 
     Map<String, dynamic> requestData = {
-      'column':
-          widget.columnName, // Only needed for "Fill Missing Values" action
+      'column': widget.columnName, // Only needed for "Fill Missing Values" action
       'action': selectedOption, // "Fill with" or "Remove Rows"
       'fillValue': selectedOption == "Fill with"
           ? fillValueController.text
@@ -67,7 +66,26 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
     bool hasMissingValues = widget.issues.contains("Missing Values");
 
     return Scaffold(
-      appBar: AppBar(title: Text("Non-Categorical: ${widget.columnName}")),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 25,
+            color: Colors.white,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          "Non-Categorical: ${widget.columnName}",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF3D7E40),
+      ),
+      backgroundColor: const Color.fromARGB(255, 212, 216, 207),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -76,7 +94,11 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
             Center(
               child: Text(
                 '${widget.columnName}',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3D7E40), // Green color for text
+                ),
               ),
             ),
             const SizedBox(height: 16.0),
@@ -84,45 +106,65 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
               Center(
                 child: Text(
                   "No issues found. Yehey!",
-                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Color.fromARGB(255, 136, 136, 136), // Light gray text
+                  ),
                 ),
               )
             else if (hasMissingValues) ...[
               Text(
                 'Missing Values',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black, // Black text color
+                ),
               ),
               Column(
                 children: [
-                  RadioListTile<String>(
+                  CheckboxListTile(
                     title: const Text("Leave Blank"),
-                    value: "Leave Blank",
-                    groupValue: selectedOption,
-                    onChanged: (value) {
+                    value: selectedOption == "Leave Blank",
+                    onChanged: (bool? value) {
                       setState(() {
-                        selectedOption = value;
+                        selectedOption = value! ? "Leave Blank" : selectedOption;
                       });
                     },
+                    controlAffinity: ListTileControlAffinity.leading, // Align checkbox on the left
+                    activeColor: Color(0xFF3D7E40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4), // Square checkbox shape
+                    ),
                   ),
-                  RadioListTile<String>(
+                  CheckboxListTile(
                     title: const Text("Fill with ____"),
-                    value: "Fill with",
-                    groupValue: selectedOption,
-                    onChanged: (value) {
+                    value: selectedOption == "Fill with",
+                    onChanged: (bool? value) {
                       setState(() {
-                        selectedOption = value;
+                        selectedOption = value! ? "Fill with" : selectedOption;
                       });
                     },
+                    controlAffinity: ListTileControlAffinity.leading, // Align checkbox on the left
+                    activeColor: Color(0xFF3D7E40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4), // Square checkbox shape
+                    ),
                   ),
-                  RadioListTile<String>(
+                  CheckboxListTile(
                     title: const Text("Remove Rows with Missing Values"),
-                    value: "Remove Rows",
-                    groupValue: selectedOption,
-                    onChanged: (value) {
+                    value: selectedOption == "Remove Rows",
+                    onChanged: (bool? value) {
                       setState(() {
-                        selectedOption = value;
+                        selectedOption = value! ? "Remove Rows" : selectedOption;
                       });
                     },
+                    controlAffinity: ListTileControlAffinity.leading, // Align checkbox on the left
+                    activeColor: Color(0xFF3D7E40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4), // Square checkbox shape
+                    ),
                   ),
                   if (selectedOption == "Fill with")
                     Padding(
@@ -132,6 +174,7 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
                         decoration: InputDecoration(
                           labelText: "Enter value",
                           border: OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                         ),
                       ),
                     ),
@@ -139,14 +182,34 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
               ),
               const SizedBox(height: 16.0),
               Center(
-                child: ElevatedButton(
+              child: Container(
+                width: double.infinity, // Make the button width take up full space
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: ElevatedButton.icon(
                   onPressed: () async {
                     _reformattedData = await resolveIssue();
                     Navigator.pop(context, _reformattedData);
                   },
-                  child: const Text("Resolve"),
+                  icon: const Icon(
+                    Icons.check_circle, // Use check_circle icon
+                    size: 22,
+                    color: Colors.white,
+                  ),
+                  label: const Text(
+                    "Resolve",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3D7E40), // Green background
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+                    foregroundColor: Colors.white, // White text color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                 ),
               ),
+            )
             ]
           ],
         ),

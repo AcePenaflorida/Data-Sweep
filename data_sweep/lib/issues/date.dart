@@ -35,19 +35,13 @@ class _DateIssuePageState extends State<DateIssuePage> {
   @override
   void initState() {
     super.initState();
-    _reformattedDataset = widget.dataset; // Initialize with the original data
-    _invalidDates = []; // Initialize empty invalid dates
+    _reformattedDataset = widget.dataset;
+    _invalidDates = [];
     _fetchInvalidDates();
   }
 
-  // Function to fetch invalid dates from the backend
   Future<void> _fetchInvalidDates() async {
     try {
-      print("Chosen Date Format: ${widget.chosenDateFormat}");
-      print("Column Name: ${widget.columnName}");
-      print("Chosen Columns: ${widget.chosenColumns}");
-      print("Chosen Classifications: ${widget.chosenClassifications}");
-
       int columnIndex = widget.chosenColumns.indexOf(widget.columnName);
       String selectedDateFormat = '';
 
@@ -70,23 +64,15 @@ class _DateIssuePageState extends State<DateIssuePage> {
             List<Map<String, dynamic>>.from(
                 json.decode(response.body)['invalid_dates']);
 
-        // Filter out unwanted entries
         setState(() {
           _invalidDates = rawInvalidDates.where((date) {
             return date.containsKey('invalid_date');
           }).toList();
 
-          // Count the invalid dates
           invalidDatesCount = _invalidDates.length;
-
-          // Count the total dates (total rows in the dataset)
-          totalDates = widget.dataset.length - 1; // minus 1 para sa column name
-
-          // Calculate valid dates
+          totalDates = widget.dataset.length - 1;
           validDatesCount = totalDates - invalidDatesCount;
         });
-
-        print("Filtered invalid dates: $_invalidDates");
       } else {
         throw Exception('Failed to fetch invalid dates');
       }
@@ -95,28 +81,23 @@ class _DateIssuePageState extends State<DateIssuePage> {
     }
   }
 
-  // Function to call the backend and reformat the selected column
   Future<void> _reformatColumn() async {
     try {
       String selectedDateFormat = '';
       int columnIndex = widget.chosenColumns.indexOf(widget.columnName);
 
-      // Check the classification array for the correct column and get the date format
       if (widget.chosenClassifications[columnIndex][3] == 1) {
         selectedDateFormat = widget.chosenDateFormat[columnIndex];
       }
 
       var uri = Uri.parse('$baseURL/reformat_column');
       var response = await http.post(uri,
-          headers: {
-            'Content-Type': 'application/json'
-          }, // Ensure the correct header
+          headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'data': widget.dataset,
             'dateFormat': selectedDateFormat,
             'classifications': widget.chosenClassifications,
-            'columnIndex': widget.chosenColumns
-                .indexOf(widget.columnName), // Send column index
+            'columnIndex': columnIndex,
           }));
 
       if (response.statusCode == 200) {
@@ -136,81 +117,184 @@ class _DateIssuePageState extends State<DateIssuePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Date Issues in ${widget.columnName}")),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 25,
+            color: Colors.white,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          "Date Issues in ${widget.columnName}",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: const Color(0xFF3D7E40),
+      ),
+      backgroundColor: const Color.fromARGB(255, 212, 216, 207),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display the count of total, invalid, and valid dates horizontally
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text("Total Dates: $totalDates | "),
-                Text("Invalid Dates: $invalidDatesCount | "),
-                Text("Valid Dates: $validDatesCount"),
+                _buildStatCard("Total Dates", totalDates.toString()),
+                _buildStatCard("Invalid Dates", invalidDatesCount.toString()),
+                _buildStatCard("Valid Dates", validDatesCount.toString()),
               ],
             ),
-
-            // List of invalid dates with small gap and border
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               "Invalid Dates for ${widget.columnName}:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
               "Expected Format: ${_invalidDates.isNotEmpty ? _invalidDates[0]['expected_format'] : 'N/A'}",
-              style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+              style: const TextStyle(
+                  fontSize: 13, fontStyle: FontStyle.italic, color: Color.fromARGB(255, 136, 136, 136)),
             ),
-
-            // Container with border and padding to display invalid dates
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 5),
-              padding: EdgeInsets.all(0),
+            const SizedBox(height: 10),
+            Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              constraints: BoxConstraints(
-                maxHeight: 300, // Set your desired maximum height here
+                color: Colors.white,
+                border: Border.all(color: Colors.grey.shade300, width: 1),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 5,
+                  ),
+                ],
               ),
               child: ListView.builder(
-                shrinkWrap: true, // Allow ListView to take only required space
-                physics: _invalidDates.length > 5
-                    ? AlwaysScrollableScrollPhysics()
-                    : NeverScrollableScrollPhysics(), // Enable scrolling when the list is too large
                 itemCount: _invalidDates.length,
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 8.0), // Small gap between items
-                    child: ListTile(
-                      title: Text("${_invalidDates[index]['invalid_date']}"),
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          bottom: BorderSide(color: Colors.grey.shade300, width: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.redAccent,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "${_invalidDates[index]['invalid_date']}",
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
             ),
-
-            // Buttons for actions
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          ),
+            const SizedBox(height: 16),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(
-                  onPressed: _reformatColumn,
-                  child: Text("Delete Invalid Dates"),
+                Container(
+                  width: double.infinity, // Make the button width match the container width
+                  child: ElevatedButton.icon(
+                    onPressed: _reformatColumn,
+                    icon: const Icon(Icons.delete_forever),
+                    label: const Text("Delete Invalid Dates"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3D7E40),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10), // Reduced border radius
+                      ),
+                    ),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context,
-                        _reformattedDataset); // Return the reformatted data
-                  },
-                  child: Text("Cancel"),
+                const SizedBox(height: 4),
+                Container(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context, _reformattedDataset);
+                    },
+                    icon: const Icon(Icons.cancel),
+                    label: const Text("Cancel"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 212, 216, 207), // Same as Scaffold's background
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+                      foregroundColor: const Color(0xFF3D7E40), // White text color
+                      side: BorderSide(color: const Color(0xFF3D7E40), width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10), // Reduced border radius
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value) {
+    return Container(
+      width: 100,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFEFEF),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF3D7E40),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade700,
+            ),
+          ),
+        ],
       ),
     );
   }
