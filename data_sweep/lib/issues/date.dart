@@ -118,23 +118,24 @@ class _DateIssuePageState extends State<DateIssuePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            size: 25,
-            color: Colors.white,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "Date Issues in ${widget.columnName}",
-          style: const TextStyle(
+        title: const Text(
+          "Date Data",
+          style: TextStyle(
+            fontFamily: 'Roboto',
             fontWeight: FontWeight.bold,
-            fontSize: 22,
+            fontSize: 24,
             color: Colors.white,
           ),
         ),
-        backgroundColor: const Color(0xFF3D7E40),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 61, 126, 64),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 24, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       backgroundColor: const Color.fromARGB(255, 212, 216, 207),
       body: Padding(
