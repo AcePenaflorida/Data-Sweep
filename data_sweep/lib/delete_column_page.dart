@@ -22,6 +22,9 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
   List<String> columns = [];
   List<bool> selectedColumns = [];
   List<List<dynamic>> csvData = [];
+  double scaleFactor1 = 1.0;
+  double scaleFactor2 = 1.0;
+  bool _isLoading = false; // Track loading state
 
   @override
   void initState() {
@@ -29,7 +32,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
     _loadColumns();
   }
 
-  // Function to load CSV columns and data
   void _loadColumns() async {
     try {
       final file = File(widget.filePath);
@@ -50,22 +52,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
     }
   }
 
-  // Function to get file size in a human-readable format
-  String _getFileSize(String filePath) {
-    final file = File(filePath);
-    final bytes = file.lengthSync();
-    const kb = 1024;
-    const mb = kb * 1024;
-    if (bytes >= mb) {
-      return '${(bytes / mb).toStringAsFixed(2)} MB';
-    } else if (bytes >= kb) {
-      return '${(bytes / kb).toStringAsFixed(2)} KB';
-    } else {
-      return '$bytes Bytes';
-    }
-  }
-
-  // Function to delete selected columns
   Future<List<List<dynamic>>> deleteColumns() async {
     try {
       List<String> columnsToRemove = selectedColumns
@@ -119,7 +105,7 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.bold,
-            fontSize: 28,
+            fontSize: 24,
             color: Colors.white,
           ),
         ),
@@ -127,73 +113,90 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
         backgroundColor: const Color.fromARGB(255, 61, 126, 64),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-          size: 30,
-          color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, size: 24, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
       ),
       body: Container(
-        color: const Color.fromARGB(255, 212, 216, 207),
+        color: const Color.fromARGB(255, 229, 234, 222),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // File name and preview button
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.description, // File icon
-                          size: 40, // Icon size
-                          color: const Color.fromARGB(255, 17, 17, 17), // Match text color
-                        ),
-                        const SizedBox(width: 6),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              p.basename(widget.filePath),
-                              style: const TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Roboto',
-                              ),
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(
+                                  255, 126, 173, 128), // Background color
+                              borderRadius: BorderRadius.circular(
+                                  6), // Set the border radius here
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _getFileSize(widget.filePath),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontFamily: 'Roboto',
-                                color: Colors.grey,
-                              ),
+                            child: Icon(
+                              Icons.description,
+                              size: 40,
+                              color: const Color.fromARGB(255, 17, 17, 17),
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  p.basename(widget.filePath),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Roboto',
+                                    color: Colors.black87,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  _getFileSize(widget.filePath),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: 'Roboto',
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.remove_red_eye),
+                      icon: const Icon(
+                        Icons.remove_red_eye,
+                        size: 28,
+                        color: Color.fromARGB(
+                            255, 0, 0, 0), // Add color to the icon for emphasis
+                      ),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PreviewPage(
-                              csvData: csvData, // Pass CSV data
+                              csvData: csvData,
                               fileName: p.basename(widget.filePath),
                             ),
                           ),
@@ -205,7 +208,6 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
               ),
             ),
 
-            // Instruction text
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text.rich(
@@ -214,18 +216,16 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                     TextSpan(
                       text: "Before we delve deeper, ",
                       style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.normal, // Normal weight for this part
-                        fontFamily: 'Roboto',
+                        fontSize: 17,
+                        fontWeight: FontWeight.normal,
                         color: Colors.black,
                       ),
                     ),
                     TextSpan(
                       text: "do you want to remove any unnecessary columns?",
                       style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold, // Bold weight for this part
-                        fontFamily: 'Roboto',
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
@@ -234,107 +234,163 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
             // "COLUMNS" label
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 12.0),
               child: Text(
-                "COLUMNS",
+                "COLUMNS:",
                 style: TextStyle(
-                  fontSize: 24,
-                  fontFamily: 'Roboto',
-                  color: Colors.black,
+                  fontSize: 18,
                 ),
               ),
             ),
-
-            const SizedBox(height: 8),
-
             // Column list
             Expanded(
-              child: ListView.builder(
-                itemCount: columns.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    minVerticalPadding: 0,
-                    horizontalTitleGap: 0,
-                    leading: Transform.scale(
-                      scale: 0.8,
-                      child: Checkbox(
-                        value: selectedColumns[index],
-                        activeColor: const Color.fromARGB(255, 61, 126, 64),
-                        checkColor: Colors.white,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            selectedColumns[index] = value ?? false;
-                          });
-                        },
-                      ),
+              child: Padding(
+                padding: const EdgeInsets.all(0),
+                child: Container(
+                  color: const Color.fromARGB(255, 231, 237, 224),
+                  child: Scrollbar(
+                    thumbVisibility:
+                        true, // This makes the scrollbar always visible
+                    child: ListView.builder(
+                      itemCount: columns.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 0), // No vertical padding
+                              child: ListTile(
+                                dense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 0), // No extra padding
+                                minVerticalPadding:
+                                    0, // Ensures no extra vertical padding
+                                horizontalTitleGap:
+                                    0, // No gap between title and leading icon
+                                leading: Transform.scale(
+                                  scale: 1,
+                                  child: Checkbox(
+                                    value: selectedColumns[index],
+                                    activeColor:
+                                        const Color.fromARGB(255, 61, 126, 64),
+                                    checkColor: Colors.white,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        selectedColumns[index] = value ?? false;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                title: Text(
+                                  columns[index],
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: 'Roboto',
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const Divider(
+                              color: Color.fromARGB(255, 200, 200, 200),
+                              thickness: 1,
+                              indent: 8,
+                              endIndent: 3,
+                              height:
+                                  0, // Set height of the Divider to 0 to reduce spacing
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                    title: Padding(
-                      padding: const EdgeInsets.only(bottom: 0),
-                      child: Text(
-                        columns[index],
-                        style: const TextStyle(
-                          fontSize: 23,
-                          fontFamily: 'Roboto',
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+                  ),
+                ),
               ),
             ),
 
             // Buttons
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 children: [
-                  SizedBox(
+                  Container(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        List<List<dynamic>> updatedCsvData =
-                            await deleteColumns();
-                        if (updatedCsvData.isNotEmpty) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ClassificationPage(
-                                csvData: updatedCsvData,
-                                fileName: p.basename(widget.filePath),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14, horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 61, 126, 64),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: _isLoading
+                        ? Center(
+                            child: SizedBox(
+                              width:
+                                  24, // Adjust width to make the spinner smaller
+                              height:
+                                  24, // Adjust height to make the spinner smaller
+                              child: CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth:
+                                    3, // Keep strokeWidth for the border thickness, adjust for visual appeal
                               ),
                             ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 61, 126, 64),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        "Remove Selected Columns",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Roboto',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                          )
+                        : GestureDetector(
+                            onTap: () async {
+                              if (_isLoading)
+                                return; // Prevent multiple taps while loading
+                              setState(() {
+                                _isLoading = true; // Start loading
+                              });
+
+                              final updatedCsvData = await deleteColumns();
+
+                              setState(() {
+                                _isLoading = false; // End loading
+                              });
+
+                              if (updatedCsvData.isNotEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ClassificationPage(
+                                      csvData: updatedCsvData,
+                                      fileName: p.basename(widget.filePath),
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text(
+                              "Remove Selected Columns",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   SizedBox(
-                    width: double.infinity,
+                    width: double.infinity, // Full width button
                     child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: Color.fromARGB(255, 61, 126, 64),
+                          width: 2,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -346,20 +402,11 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                           ),
                         );
                       },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                            color: Color.fromARGB(255, 61, 126, 64), width: 2),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
                       child: const Text(
                         "Skip Step",
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          fontFamily: 'Roboto',
                           color: Color.fromARGB(255, 61, 126, 64),
                         ),
                       ),
@@ -367,10 +414,22 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
                   ),
                 ],
               ),
-            ),
+            )
           ],
         ),
       ),
     );
+  }
+
+  String _getFileSize(String filePath) {
+    final file = File(filePath);
+    final fileSize = file.lengthSync();
+    if (fileSize < 1024) {
+      return '$fileSize bytes';
+    } else if (fileSize < 1048576) {
+      return '${(fileSize / 1024).toStringAsFixed(2)} KB';
+    } else {
+      return '${(fileSize / 1048576).toStringAsFixed(2)} MB';
+    }
   }
 }
