@@ -257,13 +257,30 @@ class _IssuesPageState extends State<IssuesPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Download Confirmation"),
+          title: Text("Download Confirmation",
+              style: TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                "What you see in the preview is what will be downloaded. Please double-check before proceeding.",
-                style: TextStyle(fontSize: 16),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "What you see in the ",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    TextSpan(
+                      text: "preview",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    TextSpan(
+                      text:
+                          " is what will be downloaded. Please double-check before proceeding.",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
               SizedBox(height: 20),
               TextField(
@@ -278,7 +295,15 @@ class _IssuesPageState extends State<IssuesPage> {
                   Navigator.of(context).pop();
                   _downloadCSV(); // Proceed to download
                 },
-                child: Text("Download File"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(
+                      255, 61, 126, 64), // Green color for the button
+                ),
+                child: Text("Download File",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 255, 255, 255),
+                    )),
               ),
             ],
           ),
@@ -290,157 +315,272 @@ class _IssuesPageState extends State<IssuesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Data Sweep - Issues")),
-      body: FutureBuilder(
-        future: _formatDataFindIssues(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
+      backgroundColor: const Color.fromARGB(255, 229, 234, 222),
+      appBar: AppBar(
+        title: const Text(
+          "DATA CLEANING",
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 61, 126, 64),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 24, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Container(
+        color: const Color.fromARGB(255, 229, 234, 222),
+        child: FutureBuilder(
+          future: _formatDataFindIssues(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
 
-          Map<String, dynamic> result = snapshot.data as Map<String, dynamic>;
-          cleanedData = result['formattedData'];
-          Map<String, List<String>> issues = result['issues'];
+            Map<String, dynamic> result = snapshot.data as Map<String, dynamic>;
+            cleanedData = result['formattedData'];
+            Map<String, List<String>> issues = result['issues'];
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PreviewPage(
-                          csvData: cleanedData,
-                          fileName: "Formatted Data",
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(
+                                        255, 126, 173, 128),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Icon(
+                                    Icons.description,
+                                    size: 40,
+                                    color:
+                                        const Color.fromARGB(255, 17, 17, 17),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Preview File', // Display the file name
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                          fontFamily: 'Roboto',
+                                          color: Colors.black87,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.remove_red_eye,
+                              size: 28,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PreviewPage(
+                                    csvData: widget.csvData,
+                                    fileName: 'Classified Data',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 9.0),
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Let's clean the data—",
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black,
+                            ),
+                          ),
+                          TextSpan(
+                            text: "click each column to resolve any issues.",
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ...widget.columns.map((column) {
+                    List<String> columnIssues = issues[column] ?? [];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      color: const Color.fromARGB(255, 240, 245, 240),
+                      elevation: 4,
+                      child: ListTile(
+                        title: Text(
+                          column,
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        subtitle: columnIssues.isEmpty
+                            ? Text("No issues found.")
+                            : Text("Issues: ${columnIssues.join(', ')}"),
+                        onTap: () async {
+                          print("Column value: $column");
+                          int columnIndex = widget.columns.indexOf(column);
+                          List<int> columnClassification =
+                              widget.classifications[columnIndex];
+                          int columnType = columnClassification.indexOf(1);
+                          List<String> columnIssues = issues[column] ?? [];
+
+                          // Switch case based on the determined column type
+                          switch (columnType) {
+                            case 0:
+                              List<List<dynamic>>? updatedDataset =
+                                  await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NumericalIssuePage(
+                                    columnName: column,
+                                    issues: columnIssues,
+                                    csvData: cleanedData,
+                                  ),
+                                ),
+                              );
+                              if (updatedDataset != null) {
+                                setState(() {
+                                  cleanedData = updatedDataset;
+                                });
+                              }
+                              break;
+                            case 1: // Categorical
+                              List<List<dynamic>>? updatedDataset =
+                                  await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CategoricalPage(
+                                    dataset: cleanedData,
+                                    columnName: column,
+                                    categoricalData: List<String>.from(
+                                        cleanedData
+                                            .skip(1) // Skip the header row
+                                            .map((row) => row[widget.columns
+                                                    .indexOf(column)]
+                                                .toString())),
+                                    issues: columnIssues,
+                                  ),
+                                ),
+                              );
+
+                              if (updatedDataset != null) {
+                                setState(() {
+                                  cleanedData = updatedDataset;
+                                });
+                              }
+
+                              break;
+                            case 2:
+                              List<List<dynamic>>? updatedDataset =
+                                  await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NonCategoricalPage(
+                                    columnName: column,
+                                    issues: columnIssues,
+                                    csvData: cleanedData,
+                                  ),
+                                ),
+                              );
+                              if (updatedDataset != null) {
+                                setState(() {
+                                  cleanedData = updatedDataset;
+                                });
+                              }
+                              break;
+                            default:
+                              List<List<dynamic>>? updatedDataset =
+                                  await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DateIssuePage(
+                                    columnName: column,
+                                    issues: columnIssues,
+                                    dataset: cleanedData,
+                                    chosenDateFormat: widget.dateFormats,
+                                    chosenColumns: widget.columns,
+                                    chosenClassifications:
+                                        widget.classifications,
+                                  ),
+                                ),
+                              );
+
+                              if (updatedDataset != null) {
+                                setState(() {
+                                  cleanedData = updatedDataset;
+                                });
+                              }
+                              break;
+                          }
+                        },
                       ),
                     );
-                  },
-                  child: Text("Preview CSV Data"),
-                ),
-                const SizedBox(height: 20),
-                Text("Oh no, inconsistencies found!"),
-                const SizedBox(height: 10),
-                ...widget.columns.map((column) {
-                  List<String> columnIssues = issues[column] ?? [];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ListTile(
-                      title: Text(column),
-                      subtitle: columnIssues.isEmpty
-                          ? Text("No issues found.")
-                          : Text("Issues: ${columnIssues.join(', ')}"),
-                      onTap: () async {
-                        print("Column value: $column");
-                        int columnIndex = widget.columns.indexOf(column);
-                        List<int> columnClassification =
-                            widget.classifications[columnIndex];
-                        int columnType = columnClassification.indexOf(1);
-                        List<String> columnIssues = issues[column] ?? [];
-
-                        // Switch case based on the determined column type
-                        switch (columnType) {
-                          case 0:
-                            List<List<dynamic>>? updatedDataset =
-                                await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NumericalIssuePage(
-                                  columnName: column,
-                                  issues: columnIssues,
-                                  csvData: cleanedData,
-                                ),
-                              ),
-                            );
-                            if (updatedDataset != null) {
-                              setState(() {
-                                cleanedData = updatedDataset;
-                              });
-                            }
-                            break;
-                          case 1: // Categorical
-                            List<List<dynamic>>? updatedDataset =
-                                await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CategoricalPage(
-                                  dataset: cleanedData,
-                                  columnName: column,
-                                  categoricalData: List<String>.from(cleanedData
-                                      .skip(1) // Skip the header row
-                                      .map((row) =>
-                                          row[widget.columns.indexOf(column)]
-                                              .toString())),
-                                  issues: columnIssues,
-                                ),
-                              ),
-                            );
-
-                            if (updatedDataset != null) {
-                              setState(() {
-                                cleanedData = updatedDataset;
-                              });
-                            }
-
-                            break;
-                          case 2:
-                            List<List<dynamic>>? updatedDataset =
-                                await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NonCategoricalPage(
-                                  columnName: column,
-                                  issues: columnIssues,
-                                  csvData: cleanedData,
-                                ),
-                              ),
-                            );
-                            if (updatedDataset != null) {
-                              setState(() {
-                                cleanedData = updatedDataset;
-                              });
-                            }
-                            break;
-                          default:
-                            List<List<dynamic>>? updatedDataset =
-                                await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DateIssuePage(
-                                  columnName: column,
-                                  issues: columnIssues,
-                                  dataset: cleanedData,
-                                  chosenDateFormat: widget.dateFormats,
-                                  chosenColumns: widget.columns,
-                                  chosenClassifications: widget.classifications,
-                                ),
-                              ),
-                            );
-
-                            if (updatedDataset != null) {
-                              setState(() {
-                                cleanedData = updatedDataset;
-                              });
-                            }
-                            break;
-                        }
-                      },
-                    ),
-                  );
-                }).toList(),
-                const SizedBox(height: 20),
-              ],
-            ),
-          );
-        },
+                  }).toList(),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
+        ),
       ),
       bottomNavigationBar: BottomAppBar(
+        color: Colors.white, // Set background to white
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -449,6 +589,8 @@ class _IssuesPageState extends State<IssuesPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(255, 61, 126,
+                        64), // Use the green color for text and icons
                   ),
                   onPressed: () {
                     _showDownloadDialog(context); // Show download confirmation
@@ -458,11 +600,15 @@ class _IssuesPageState extends State<IssuesPage> {
                       Icon(
                         Icons.download,
                         size: 20.0,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
                       ),
                       Text(
                         "Download",
                         style: TextStyle(
                           fontSize: 10.0, // Adjust the font size
+                          color: const Color.fromARGB(
+                              255, 61, 126, 64), // Green color for text
                         ),
                       ),
                     ],
@@ -475,6 +621,8 @@ class _IssuesPageState extends State<IssuesPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -490,10 +638,17 @@ class _IssuesPageState extends State<IssuesPage> {
                   },
                   child: Column(
                     children: [
-                      Icon(Icons.scatter_plot),
+                      Icon(
+                        Icons.scatter_plot,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
                       Text(
                         "Outliers",
-                        style: TextStyle(fontSize: 10.0),
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
                       ),
                     ],
                   ),
@@ -505,6 +660,8 @@ class _IssuesPageState extends State<IssuesPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -520,10 +677,17 @@ class _IssuesPageState extends State<IssuesPage> {
                   },
                   child: Column(
                     children: [
-                      Icon(Icons.transform),
+                      Icon(
+                        Icons.transform,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
                       Text(
                         "Scaling",
-                        style: TextStyle(fontSize: 10.0),
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
                       ),
                     ],
                   ),
@@ -535,6 +699,8 @@ class _IssuesPageState extends State<IssuesPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -550,10 +716,17 @@ class _IssuesPageState extends State<IssuesPage> {
                   },
                   child: Column(
                     children: [
-                      Icon(Icons.bar_chart),
+                      Icon(
+                        Icons.bar_chart,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
                       Text(
                         "Visualize",
-                        style: TextStyle(fontSize: 10.0),
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
                       ),
                     ],
                   ),
@@ -565,6 +738,8 @@ class _IssuesPageState extends State<IssuesPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
                   ),
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
@@ -575,10 +750,17 @@ class _IssuesPageState extends State<IssuesPage> {
                   },
                   child: Column(
                     children: [
-                      Icon(Icons.home),
+                      Icon(
+                        Icons.home,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
                       Text(
                         "Home",
-                        style: TextStyle(fontSize: 10.0),
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
                       ),
                     ],
                   ),
