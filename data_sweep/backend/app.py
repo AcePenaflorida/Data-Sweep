@@ -241,7 +241,7 @@ def detect_issues(data, columns, classifications):
         
         elif classifications[i][3] == 1:  # Date column
             invalid_dates_count = detect_invalid_dates(data, column_index)
-            if invalid_dates_count >= 0:
+            if invalid_dates_count > 0:
                 column_issues.append(f"Invalid Dates")
 
         if column_issues:
@@ -251,12 +251,6 @@ def detect_issues(data, columns, classifications):
 
 def map_categorical_values(data, column, unique_values, standard_format):
     print("Function Invoked: map_categorical_values")
-    
-    # Print the inputs received
-    print(f"Data received: {data}")
-    print(f"Column to map: {column}")
-    print(f"Unique values received: {unique_values}")
-    print(f"Standard format provided: {standard_format}")
 
     # Prepare the data for DataFrame creation
     headers = data[0] if isinstance(data[0], list) else []
@@ -268,8 +262,6 @@ def map_categorical_values(data, column, unique_values, standard_format):
 
     # Create the DataFrame with uppercase column names
     df = pd.DataFrame(data_rows, columns=headers)
-    print("DataFrame created from input data with uppercase column names:")
-    print(df)
 
     # Create the mapping dictionary and print it
     category_mapping = dict(zip(unique_values, standard_format))
@@ -446,8 +438,6 @@ def outliers_graph():
     task = request.json.get('task')
     method = request.json.get('method')
     df = pd.DataFrame(data[1:], columns=data[0])
-    print(f"column_name: {column_name}")
-    print(f"data: {data}")
 
     outlier_detection_method = choose_outlier_detection_method(df, column_name)
     outliers_count = 1
@@ -466,7 +456,7 @@ def outliers_graph():
             elif method == "Replace with Mean":
                 filtered_outliers = replace_with_mean(filtered_outliers, column_name)
             elif method == "Replace with Median":
-                filtered_ouliers = replace_with_median(filtered_outliers, column_name)
+                filtered_outliers = replace_with_median(filtered_outliers, column_name)
             
             img, outliers_count = plot_boxen_with_outliers(filtered_outliers, column_name, outlier_detection_method)
     
@@ -478,7 +468,6 @@ def get_cleaned_file():
     column_name = request.json.get('column_name')
     task = request.json.get('task')
     method = request.json.get('method')
-    print(data)
 
     df = pd.DataFrame(data[1:], columns=data[0])
     outlier_detection_method = choose_outlier_detection_method(df, column_name)
@@ -508,12 +497,6 @@ def map_categorical_values_route():
     column = request.json.get('column')
     unique_values = request.json.get('unique_values')
     standard_format = request.json.get('standard_format')
-
-    # Debugging print statements for each variable
-    print(f"Data received: {data}")
-    print(f"Column received: {column}")
-    print(f"Unique values received: {unique_values}")
-    print(f"Standard format received: {standard_format}")
 
     # Call the mapping function and print the result for debugging
     result = map_categorical_values(data, column, unique_values, standard_format)
@@ -582,7 +565,6 @@ def delete_invalid_dates():
         if row_valid:
             valid_data.append(row)  # Only add rows that passed the check
 
-    print(f"Valid data: {valid_data}")
     reformat_dates = reformat_date(valid_data, date_format, classifications)
     return jsonify(reformat_dates)
 
@@ -640,12 +622,9 @@ def reformat_date_route():
         data = request.json['data']
         date_formats = request.json['dateFormats']
         classifications = request.json['classifications']
-        print(f"Received data: {data}")
-        print(f"Received dateFormats: {date_formats}")
         result = reformat_date(data, date_formats, classifications)  # Assuming you want the first date format
         return jsonify(result)
     except Exception as e:
-        print(f"Error processing request: {e}")
         return jsonify({"error": str(e)}), 400
 
 @app.route('/show_invalid_dates', methods=['POST'])
@@ -654,11 +633,6 @@ def show_invalid_dates():
     date_format = request.json['dateFormat']  # Get the user-specified date format
     classifications = request.json['classifications']
     column_index = request.json['columnIndex']  # Get the specific column to check
-
-    # Print out the received values to debug
-    print(f"Received Date Format: {date_format}")
-    print(f"Received Column Index: {column_index}")
-    print(f"Received Classifications: {classifications}")
 
     # Define format mappings for supported date formats
     format_mappings = {
@@ -752,7 +726,6 @@ def reformat_column():
     # Delete rows with invalid dates
     data = [row for index, row in enumerate(data) if index not in invalid_row_indices]
 
-    print(data)  # Optionally log the updated data for debugging
     return jsonify(data)
 
 
@@ -772,7 +745,6 @@ def process_data():
 
     # Create a DataFrame and replace empty strings with NaN
     df = pd.DataFrame(dataset[1:], columns=dataset[0]).replace("", np.nan)
-    print(f"DataFrame Columns: {df.columns}")
 
     if column_name not in df.columns:
         return jsonify({"error": "Column not found"}), 400
@@ -782,7 +754,6 @@ def process_data():
         cleaned_df = df.dropna(subset=[column_name])
         cleaned_df = cleaned_df.applymap(lambda x: "" if pd.isna(x) else x)
         cleaned_data = [list(cleaned_df.columns)] + cleaned_df.values.tolist()
-        print(f"Cleaned Data (Remove Rows): {cleaned_data}")
         return jsonify(cleaned_data)
 
     elif action == "Fill with":
@@ -795,7 +766,6 @@ def process_data():
             if row[column_index] in [None, ""]:  # If the value is missing
                 row[column_index] = fill_value
         
-        print(f"Cleaned Data (Fill with): {dataset}")
         return jsonify(dataset)
 
     elif action == "Fill with Mode":
@@ -805,11 +775,9 @@ def process_data():
 
         df[column_name] = df[column_name].fillna(mode_value)
         filled_data = [list(df.columns)] + df.applymap(lambda x: "" if pd.isna(x) else x).values.tolist()
-        print(f"Cleaned Data (Fill with Mode): {filled_data}")
         return jsonify(filled_data)
 
     elif action == "Leave Blank":
-        print(f"Cleaned Data (Leave Blank): {dataset}")
         return jsonify(dataset)
 
     else:
@@ -880,7 +848,6 @@ def numerical_missing_values():
         action = data.get('action')
         fill_value = data.get('fillValue')
         dataset = data.get('data')
-        print(f"NUMERICAL: {column_name}, FillValue {fill_value}, dataset: {dataset}")
 
         if not dataset or not column_name or not action:
             return jsonify({"error": "Missing required fields"}), 400
@@ -896,8 +863,6 @@ def numerical_missing_values():
             mode_value = mode(df[column_name].dropna())
         except StatisticsError:
             mode_value = None  # Handle case where mode cannot be determined
-
-        print(f"Mean: {mean_value}, Median: {median_value}, Mode: {mode_value}")
 
         # Handle the selected action
         if action == "Fill/Replace with Mean":
@@ -1013,7 +978,6 @@ def generate_chart_endpoint():
         try:
             column_index = columns.index(column_name)  # Find the index of the column
         except ValueError:
-            print(f"Column '{column_name}' not found in columns list.")
             return f"Column '{column_name}' not found in the columns list", 400
         
         # Ensure that 'csv_data' is a list of lists
@@ -1044,7 +1008,6 @@ def calculate_statistics():
     column_data = [row[column_index] for row in data[1:]] 
 
     classification = classifications[column_index]
-    print("Classification for the column:", classification)
 
 
     if classification[2] == 1:  # non-categorical
@@ -1075,7 +1038,6 @@ def calculate_statistics():
                 continue
         
         # Debugging: Print the filtered data
-        print(f"Filtered numeric column_data: {column_data_filtered}")
 
         # Check if column_data_filtered is empty after filtering
         if not column_data_filtered:
