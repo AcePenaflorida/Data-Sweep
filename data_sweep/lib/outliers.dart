@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:csv/csv.dart';
 import 'package:data_sweep/config.dart';
+import 'package:data_sweep/issues_page.dart';
 import 'package:data_sweep/main.dart';
 import 'package:data_sweep/preview_page.dart';
 import 'package:data_sweep/scaling_page.dart';
@@ -634,6 +635,7 @@ class _OutliersPageState extends State<OutliersPage> {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
+        color: Colors.white, // Set background to white
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -642,6 +644,8 @@ class _OutliersPageState extends State<OutliersPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(255, 61, 126,
+                        64), // Use the green color for text and icons
                   ),
                   onPressed: () {
                     _showDownloadDialog(context); // Show download confirmation
@@ -651,11 +655,15 @@ class _OutliersPageState extends State<OutliersPage> {
                       Icon(
                         Icons.download,
                         size: 20.0,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
                       ),
                       Text(
                         "Download",
                         style: TextStyle(
                           fontSize: 10.0, // Adjust the font size
+                          color: const Color.fromARGB(
+                              255, 61, 126, 64), // Green color for text
                         ),
                       ),
                     ],
@@ -668,9 +676,51 @@ class _OutliersPageState extends State<OutliersPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IssuesPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                          casingSelections: widget.casingSelections,
+                          dateFormats: widget.dateFormats,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
+                      Text(
+                        "Issues",
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
+                  ),
+                  onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -686,10 +736,17 @@ class _OutliersPageState extends State<OutliersPage> {
                   },
                   child: Column(
                     children: [
-                      Icon(Icons.transform),
+                      Icon(
+                        Icons.transform,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
                       Text(
                         "Scaling",
-                        style: TextStyle(fontSize: 10.0),
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
                       ),
                     ],
                   ),
@@ -701,6 +758,8 @@ class _OutliersPageState extends State<OutliersPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -716,10 +775,17 @@ class _OutliersPageState extends State<OutliersPage> {
                   },
                   child: Column(
                     children: [
-                      Icon(Icons.bar_chart),
+                      Icon(
+                        Icons.bar_chart,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
                       Text(
                         "Visualize",
-                        style: TextStyle(fontSize: 10.0),
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
                       ),
                     ],
                   ),
@@ -731,6 +797,8 @@ class _OutliersPageState extends State<OutliersPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
                   ),
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
@@ -741,10 +809,17 @@ class _OutliersPageState extends State<OutliersPage> {
                   },
                   child: Column(
                     children: [
-                      Icon(Icons.home),
+                      Icon(
+                        Icons.home,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
                       Text(
                         "Home",
-                        style: TextStyle(fontSize: 10.0),
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
                       ),
                     ],
                   ),

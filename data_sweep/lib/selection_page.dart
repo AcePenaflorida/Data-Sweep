@@ -74,24 +74,26 @@ class SelectionPages extends StatelessWidget {
                         );
                       },
                     ),
-                    // _buildCard(
-                    //   context,
-                    //   "assets/HandleOutliers.png",
-                    //   "Detect and handle outliers to refine your dataset.",
-                    //   "Outliers",
-                    //   () {
-                    //     Navigator.push(
-                    //       context,
-                    //       MaterialPageRoute(
-                    //         builder: (context) => OutliersPage(
-                    //           csvData: csvData,
-                    //           columns: columns,
-                    //           classifications: classifications,
-                    //         ),
-                    //       ),
-                    //     );
-                    //   },
-                    // ),
+                    _buildCard(
+                      context,
+                      "assets/HandleOutliers.png",
+                      "Detect and handle outliers to refine your dataset.",
+                      "Outliers",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OutliersPage(
+                              csvData: csvData,
+                              columns: columns,
+                              classifications: classifications,
+                              casingSelections: casingSelections,
+                              dateFormats: dateFormats,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     _buildCard(
                       context,
                       "assets/FeatureScaling.png",

@@ -505,47 +505,47 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
                 ),
               ],
             ),
-            // Column(
-            //   children: [
-            //     TextButton(
-            //       style: TextButton.styleFrom(
-            //         padding: EdgeInsets.zero, // No padding for this button
-            //         foregroundColor: const Color.fromARGB(
-            //             255, 61, 126, 64), // Green color for text and icons
-            //       ),
-            //       onPressed: () {
-            //         Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //             builder: (context) => OutliersPage(
-            //               csvData: scaledData,
-            //               columns: widget.columns,
-            //               classifications: widget.classifications,
-            //               casingSelections: widget.casingSelections,
-            //               dateFormats: widget.dateFormats,
-            //             ),
-            //           ),
-            //         );
-            //       },
-            //       child: Column(
-            //         children: [
-            //           Icon(
-            //             Icons.scatter_plot,
-            //             color: const Color.fromARGB(
-            //                 255, 61, 126, 64), // Green color for icon
-            //           ),
-            //           Text(
-            //             "Outliers",
-            //             style: TextStyle(
-            //                 fontSize: 10.0,
-            //                 color: const Color.fromARGB(
-            //                     255, 61, 126, 64)), // Green color for text
-            //           ),
-            //         ],
-            //       ),
-            //     ),
-            //   ],
-            // ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OutliersPage(
+                          csvData: scaledData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                          casingSelections: widget.casingSelections,
+                          dateFormats: widget.dateFormats,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.scatter_plot,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
+                      Text(
+                        "Outliers",
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             Column(
               children: [
                 TextButton(
