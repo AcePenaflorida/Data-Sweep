@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:ui';
 
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'delete_column_page.dart';
@@ -115,23 +117,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         if (result != null) {
                           String filePath = result.files.single.path!;
                           String fileExtension = filePath.split('.').last;
-
-                          if (fileExtension == 'csv') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DeleteColumnPage(filePath: filePath),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    'Unsupported file type: $fileExtension'),
-                              ),
-                            );
-                          }
+                          await checkCSV(context, filePath, fileExtension);
                         }
                       },
                       splashColor: Colors.green.withOpacity(0.3),
@@ -231,3 +217,188 @@ class DashedBorderPainter extends CustomPainter {
     return false;
   }
 }
+
+
+Future<void> checkCSV(BuildContext context, String filePath, String fileExtension) async {
+  try {
+    // Check if the file exists
+    final file = File(filePath);
+    if (!await file.exists()) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            title: Text(
+              "File Not Found",
+              style: TextStyle(
+                color: Color.fromARGB(255, 61, 126, 64),
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            content: Text(
+              "The file was not found. Please check the file path.",
+              style: TextStyle(fontSize: 14.0),
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 61, 126, 64),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    // Check if the file is a CSV by its extension
+    if (!filePath.endsWith('.csv')) {
+       ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Unsupported file type: $fileExtension'),
+          ),
+        );
+    }
+    
+
+    // Read the contents of the CSV file
+    final content = await file.readAsString();
+
+    // Parse the CSV content
+    final csvData = CsvToListConverter().convert(content);
+
+    // Check if the CSV is completely empty
+    if (csvData.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            title: Text(
+              "Incomplete Classification",
+              style: TextStyle(
+                color: Color.fromARGB(255, 61, 126, 64),
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            content: Text(
+              "The CSV file is completely empty. Please check the file content.",
+              style: TextStyle(fontSize: 14.0),
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 61, 126, 64),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+     if (csvData.length <= 1 || (csvData.length == 1 && csvData.first.every((element) => element == null || element.toString().trim().isEmpty))) {
+    // Show a dialog if the CSV file is empty or only contains headers
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            title: Text(
+              "Incomplete Classification",
+              style: TextStyle(
+                color: Color.fromARGB(255, 61, 126, 64),
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            content: Text(
+              "The CSV file has no rows of data. Please check the file.",
+              style: TextStyle(fontSize: 14.0),
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 61, 126, 64),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }else{
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              DeleteColumnPage(filePath: filePath),
+        ),
+      );
+    }
+  } catch (e) {
+    print("Error reading CSV");
+  }
+}
+
+

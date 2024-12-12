@@ -20,7 +20,7 @@ class NumericalIssuePage extends StatefulWidget {
 
 class _NumericalIssuePageState extends State<NumericalIssuePage> {
   late List<List<dynamic>> _reformattedData;
-  String? selectedOption = "Leave Blank";
+  String? selectedOption = "";
   final TextEditingController customValueController = TextEditingController();
 
   @override
@@ -200,28 +200,42 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
+                          if (selectedOption == null || selectedOption!.isEmpty) {
+                            showCustomDialog(
+                              context: context,
+                              title: "No Option Selected",
+                              content: "Please select a valid method.",
+                              buttonLabel: "OK",
+                            );
+                            return;
+                          }
+                          
                           if (selectedOption ==
                                   "Fill/Replace with Custom Value" &&
                               double.tryParse(customValueController.text) ==
                                   null) {
-                            showDialog(
+                            showCustomDialog(
                               context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text("Error"),
-                                content: const Text(
-                                    "Please enter a valid numeric value."),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text("OK"),
-                                  ),
-                                ],
-                              ),
+                              title: "Oops",
+                              content: "Please enter a valid numeric value.",
+                              buttonLabel: "OK",
                             );
+                            
                             return;
                           }
-                          _reformattedData = await resolveIssue();
-                          Navigator.pop(context, _reformattedData);
+                          
+                          try {
+                            _reformattedData = await resolveIssue();
+                            Navigator.pop(context, _reformattedData);
+                          } catch (error) {
+                            showCustomDialog(
+                              context: context,
+                              title: "Unable to resolve the issue..",
+                              content: "Please select a valid method.",
+                              buttonLabel: "OK",
+                            );
+                          }
+
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3D7E40),
@@ -250,4 +264,57 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
       ),
     );
   }
+}
+
+void showCustomDialog({
+  required BuildContext context,
+  required String title,
+  required String content,
+  required String buttonLabel,
+}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: Color.fromARGB(255, 61, 126, 64),
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          content,
+          style: TextStyle(fontSize: 14.0),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          Center(
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Color.fromARGB(255, 61, 126, 64),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6.0),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                buttonLabel,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }
