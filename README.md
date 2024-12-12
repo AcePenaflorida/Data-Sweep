@@ -26,19 +26,43 @@ Data Sweep is a mobile app designed to help users efficiently clean and preproce
     git clone https://github.com/AcePenaflorida/Data-Sweep.git
     ```
 
-2. Install dependencies by running the following command:
+2. Install the necessary dependencies for the **Python backend** and **Flutter frontend**.
 
-    ```bash
-    flutter pub get
-    ```
+    - For **Python**, navigate to the backend folder and install dependencies:
 
-3. Build and run the app on an Android or iOS device:
+        ```bash
+        pip install -r requirements.txt
+        ```
+
+    - For **Flutter**, navigate to the `flutter_app/` folder (or your Flutter app folder) and install dependencies:
+
+        ```bash
+        flutter pub get
+        ```
+
+3. Run the **Python Backend** (`app.py`):
+    - By default, the app uses the hosted URL (https://data-sweep-server.onrender.com/). If you want to run the backend locally, follow these steps:
+
+    - Navigate to the folder where `app.py` is located.
+    - Start the Python server and input the desired **base URL** or **IP address** when prompted:
+
+        ```bash
+        python app.py
+        ```
+
+    - Enter your choice for the **base URL**:
+        - Use a local IP address found in the terminal when you run the python code(e.g., `http://192.168.1.x:5000`)
+        - Or use the defualt hosted URL (e.g., `https://data-sweep-server.onrender.com/`)
+
+    You can find the full server code in the [Data-Sweep-Server repository](https://github.com/VivieneGarcia/Data-Sweep-Server).
+
+5. Run the **Flutter Frontend** on a mobile device or simulator:
 
     ```bash
     flutter run
     ```
 
-4. Launch the app and begin cleaning your CSV datasets with ease!
+6. Launch the app and begin cleaning your CSV datasets with ease!
 
 ## 🔧 Built With
 * [Flutter](https://flutter.dev/) - Mobile App Framework
