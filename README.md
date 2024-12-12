@@ -1,5 +1,7 @@
 <h1 align="center">DATA SWEEP: CSV Dataset Cleaning App</h1>
 
+📢 **Please check the other branches in the repository** for additional details and development progress. You can find the branches [here](https://github.com/AcePenaflorida/Data-Sweep/branches).
+
 ## ⭐ About
 Data Sweep is a mobile app designed to help users efficiently clean and preprocess their CSV data, streamlining the process of handling and analyzing datasets with ease.
 
