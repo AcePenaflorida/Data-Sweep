@@ -84,25 +84,25 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
         ),
       ),
       backgroundColor: const Color.fromARGB(255, 212, 216, 207),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                'Column: ${widget.columnName}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF3D7E40), // Green color for text
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Text(
+                  'Column: ${widget.columnName}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF3D7E40), // Green color for text
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16.0),
-            if (widget.issues.isEmpty)
-              Expanded(
-                child: Center(
+              const SizedBox(height: 16.0),
+              if (widget.issues.isEmpty)
+                Center(
                   child: Text(
                     "No issues found. Yehey!",
                     style: const TextStyle(
@@ -112,119 +112,120 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
                           Color.fromARGB(255, 136, 136, 136), // Light gray text
                     ),
                   ),
-                ),
-              )
-            else if (hasMissingValues) ...[
-              Text(
-                'Missing Values',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black, // Black text color
-                ),
-              ),
-              Column(
-                children: [
-                  CheckboxListTile(
-                    title: const Text("Leave Blank"),
-                    value: selectedOption == "Leave Blank",
-                    onChanged: (bool? value) {
-                      setState(() {
-                        selectedOption =
-                            value! ? "Leave Blank" : selectedOption;
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity
-                        .leading, // Align checkbox on the left
-                    activeColor: Color(0xFF3D7E40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(4), // Square checkbox shape
-                    ),
+                )
+              else if (hasMissingValues) ...[
+                Text(
+                  'Missing Values',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black, // Black text color
                   ),
-                  CheckboxListTile(
-                    title: const Text("Fill with ____"),
-                    value: selectedOption == "Fill with",
-                    onChanged: (bool? value) {
-                      setState(() {
-                        selectedOption = value! ? "Fill with" : selectedOption;
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity
-                        .leading, // Align checkbox on the left
-                    activeColor: Color(0xFF3D7E40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(4), // Square checkbox shape
+                ),
+                Column(
+                  children: [
+                    CheckboxListTile(
+                      title: const Text("Leave Blank"),
+                      value: selectedOption == "Leave Blank",
+                      onChanged: (bool? value) {
+                        setState(() {
+                          selectedOption =
+                              value! ? "Leave Blank" : selectedOption;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity
+                          .leading, // Align checkbox on the left
+                      activeColor: Color(0xFF3D7E40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(4), // Square checkbox shape
+                      ),
                     ),
-                  ),
-                  if (selectedOption == "Fill with")
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: TextField(
-                        controller: fillValueController,
-                        decoration: InputDecoration(
-                          labelText: "Enter value",
-                          border: OutlineInputBorder(),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 12),
+                    CheckboxListTile(
+                      title: const Text("Fill with ____"),
+                      value: selectedOption == "Fill with",
+                      onChanged: (bool? value) {
+                        setState(() {
+                          selectedOption =
+                              value! ? "Fill with" : selectedOption;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity
+                          .leading, // Align checkbox on the left
+                      activeColor: Color(0xFF3D7E40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(4), // Square checkbox shape
+                      ),
+                    ),
+                    if (selectedOption == "Fill with")
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: TextField(
+                          controller: fillValueController,
+                          decoration: InputDecoration(
+                            labelText: "Enter value",
+                            border: OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 12),
+                          ),
+                        ),
+                      ),
+                    CheckboxListTile(
+                      title: const Text("Remove Rows with Missing Values"),
+                      value: selectedOption == "Remove Rows",
+                      onChanged: (bool? value) {
+                        setState(() {
+                          selectedOption =
+                              value! ? "Remove Rows" : selectedOption;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity
+                          .leading, // Align checkbox on the left
+                      activeColor: Color(0xFF3D7E40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(4), // Square checkbox shape
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                Center(
+                  child: Container(
+                    width: double
+                        .infinity, // Make the button width take up full space
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        _reformattedData = await resolveIssue();
+                        Navigator.pop(context, _reformattedData);
+                      },
+                      icon: const Icon(
+                        Icons.check_circle, // Use check_circle icon
+                        size: 22,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        "Resolve",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color(0xFF3D7E40), // Green background
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 20),
+                        foregroundColor: Colors.white, // White text color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
-                  CheckboxListTile(
-                    title: const Text("Remove Rows with Missing Values"),
-                    value: selectedOption == "Remove Rows",
-                    onChanged: (bool? value) {
-                      setState(() {
-                        selectedOption =
-                            value! ? "Remove Rows" : selectedOption;
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity
-                        .leading, // Align checkbox on the left
-                    activeColor: Color(0xFF3D7E40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(4), // Square checkbox shape
-                    ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16.0),
-              Center(
-                child: Container(
-                  width: double
-                      .infinity, // Make the button width take up full space
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      _reformattedData = await resolveIssue();
-                      Navigator.pop(context, _reformattedData);
-                    },
-                    icon: const Icon(
-                      Icons.check_circle, // Use check_circle icon
-                      size: 22,
-                      color: Colors.white,
-                    ),
-                    label: const Text(
-                      "Resolve",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(0xFF3D7E40), // Green background
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 20),
-                      foregroundColor: Colors.white, // White text color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            ]
-          ],
+                )
+              ]
+            ],
+          ),
         ),
       ),
     );

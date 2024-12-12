@@ -16,11 +16,15 @@ class OutliersPage extends StatefulWidget {
   final List<List<dynamic>> csvData;
   final List<String> columns;
   final List<List<int>> classifications;
+  final List<String> casingSelections;
+  final List<String> dateFormats;
 
   const OutliersPage({
     required this.csvData,
     required this.columns,
     required this.classifications,
+    required this.casingSelections,
+    required this.dateFormats,
   });
 
   @override
@@ -148,6 +152,8 @@ class _OutliersPageState extends State<OutliersPage> {
                       csvData: cleanedData,
                       columns: widget.columns,
                       classifications: widget.classifications,
+                      casingSelections: widget.casingSelections,
+                      dateFormats: widget.dateFormats,
                     ),
                   ),
                 );
@@ -164,6 +170,8 @@ class _OutliersPageState extends State<OutliersPage> {
                       csvData: cleanedData,
                       columns: widget.columns,
                       classifications: widget.classifications,
+                      casingSelections: widget.casingSelections,
+                      dateFormats: widget.dateFormats,
                     ),
                   ),
                 );
@@ -670,6 +678,8 @@ class _OutliersPageState extends State<OutliersPage> {
                           csvData: cleanedData,
                           columns: widget.columns,
                           classifications: widget.classifications,
+                          casingSelections: widget.casingSelections,
+                          dateFormats: widget.dateFormats,
                         ),
                       ),
                     );

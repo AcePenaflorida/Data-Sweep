@@ -90,27 +90,27 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Text(
-                    'Column: ${widget.columnName}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF3D7E40),
+                Container(
+                  child: Center(
+                    child: Text(
+                      'Column: ${widget.columnName}',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3D7E40),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16.0),
                 if (widget.issues.isEmpty)
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        "No issues found. Yehey!",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontStyle: FontStyle.italic,
-                          color: Color.fromARGB(255, 136, 136, 136),
-                        ),
+                  Center(
+                    child: Text(
+                      "No issues found. Yehey!",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Color.fromARGB(255, 136, 136, 136),
                       ),
                     ),
                   )
@@ -122,74 +122,77 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Column(
-                    children: [
-                      RadioListTile<String>(
-                        title: const Text("Fill/Replace with Mean"),
-                        value: "Fill/Replace with Mean",
-                        groupValue: selectedOption,
-                        activeColor: const Color.fromARGB(255, 61, 126, 64),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedOption = value;
-                          });
-                        },
-                      ),
-                      RadioListTile<String>(
-                        title: const Text("Fill/Replace with Median"),
-                        value: "Fill/Replace with Median",
-                        groupValue: selectedOption,
-                        activeColor: const Color.fromARGB(255, 61, 126, 64),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedOption = value;
-                          });
-                        },
-                      ),
-                      RadioListTile<String>(
-                        title: const Text("Fill/Replace with Mode"),
-                        value: "Fill/Replace with Mode",
-                        groupValue: selectedOption,
-                        activeColor: const Color.fromARGB(255, 61, 126, 64),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedOption = value;
-                          });
-                        },
-                      ),
-                      RadioListTile<String>(
-                        title: const Text("Fill/Replace with Custom Value"),
-                        value: "Fill/Replace with Custom Value",
-                        groupValue: selectedOption,
-                        activeColor: const Color.fromARGB(255, 61, 126, 64),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedOption = value;
-                          });
-                        },
-                      ),
-                      if (selectedOption == "Fill/Replace with Custom Value")
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: TextField(
-                            controller: customValueController,
-                            decoration: const InputDecoration(
-                              labelText: "Enter custom value",
-                              border: OutlineInputBorder(),
+                  Container(
+                    child: Column(
+                      children: [
+                        RadioListTile<String>(
+                          title: const Text("Fill/Replace with Mean"),
+                          value: "Fill/Replace with Mean",
+                          groupValue: selectedOption,
+                          activeColor: const Color.fromARGB(255, 61, 126, 64),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedOption = value;
+                            });
+                          },
+                        ),
+                        RadioListTile<String>(
+                          title: const Text("Fill/Replace with Median"),
+                          value: "Fill/Replace with Median",
+                          groupValue: selectedOption,
+                          activeColor: const Color.fromARGB(255, 61, 126, 64),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedOption = value;
+                            });
+                          },
+                        ),
+                        RadioListTile<String>(
+                          title: const Text("Fill/Replace with Mode"),
+                          value: "Fill/Replace with Mode",
+                          groupValue: selectedOption,
+                          activeColor: const Color.fromARGB(255, 61, 126, 64),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedOption = value;
+                            });
+                          },
+                        ),
+                        RadioListTile<String>(
+                          title: const Text("Fill/Replace with Custom Value"),
+                          value: "Fill/Replace with Custom Value",
+                          groupValue: selectedOption,
+                          activeColor: const Color.fromARGB(255, 61, 126, 64),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedOption = value;
+                            });
+                          },
+                        ),
+                        if (selectedOption == "Fill/Replace with Custom Value")
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: TextField(
+                              controller: customValueController,
+                              decoration: const InputDecoration(
+                                labelText: "Enter custom value",
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
+                        RadioListTile<String>(
+                          title: const Text("Remove Rows"),
+                          value: "Remove Rows",
+                          groupValue: selectedOption,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedOption = value;
+                            });
+                          },
                         ),
-                      RadioListTile<String>(
-                        title: const Text("Remove Rows"),
-                        value: "Remove Rows",
-                        groupValue: selectedOption,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedOption = value;
-                          });
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16.0),
                   Center(

@@ -36,9 +36,7 @@ class SelectionPages extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255, 61, 126, 64),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-          size: 30,
-          color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, size: 30, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -58,7 +56,7 @@ class SelectionPages extends StatelessWidget {
                   children: [
                     _buildCard(
                       context,
-                      "assets/DataCleaning.png", 
+                      "assets/DataCleaning.png",
                       "Fix inconsistencies for accurate analysis.",
                       "Data Cleaning",
                       () {
@@ -76,27 +74,27 @@ class SelectionPages extends StatelessWidget {
                         );
                       },
                     ),
+                    // _buildCard(
+                    //   context,
+                    //   "assets/HandleOutliers.png",
+                    //   "Detect and handle outliers to refine your dataset.",
+                    //   "Outliers",
+                    //   () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => OutliersPage(
+                    //           csvData: csvData,
+                    //           columns: columns,
+                    //           classifications: classifications,
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
                     _buildCard(
                       context,
-                      "assets/HandleOutliers.png",
-                      "Detect and handle outliers to refine your dataset.",
-                      "Outliers",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => OutliersPage(
-                              csvData: csvData,
-                              columns: columns,
-                              classifications: classifications,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildCard(
-                      context,
-                      "assets/FeatureScaling.png", 
+                      "assets/FeatureScaling.png",
                       "Normalize your data for better model performance.",
                       "Feature Scaling",
                       () {
@@ -107,6 +105,8 @@ class SelectionPages extends StatelessWidget {
                               csvData: csvData,
                               columns: columns,
                               classifications: classifications,
+                              casingSelections: casingSelections,
+                              dateFormats: dateFormats,
                             ),
                           ),
                         );
@@ -197,7 +197,8 @@ class SelectionPages extends StatelessWidget {
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 61, 126, 64),
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 30),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),

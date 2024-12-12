@@ -13,6 +13,7 @@ class PreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 229, 234, 222),
       appBar: AppBar(
         title: const Text(
           "FILE PREVIEW",

@@ -183,62 +183,6 @@ class _IssuesPageState extends State<IssuesPage> {
             content: Text('Storage permission is required to save the file.')),
       );
     }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Downloaded!"),
-          content: Text("Would you like to do more things, Kimi?"),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                // Close dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => OutliersPage(
-                      csvData: cleanedData,
-                      columns: widget.columns,
-                      classifications: widget.classifications,
-                    ),
-                  ),
-                );
-              },
-              child: Text("Go to Outliers"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Close dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FeatureScalingPage(
-                      csvData: cleanedData,
-                      columns: widget.columns,
-                      classifications: widget.classifications,
-                    ),
-                  ),
-                );
-              },
-              child: Text("Go to Feature Scaling"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to Home page
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                  (Route<dynamic> route) => false, // Remove all previous routes
-                );
-              },
-              child: Text("Go to Home"),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<String> _getDownloadsDirectoryPath() async {
@@ -420,7 +364,7 @@ class _IssuesPageState extends State<IssuesPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => PreviewPage(
-                                    csvData: widget.csvData,
+                                    csvData: cleanedData,
                                     fileName: 'Classified Data',
                                   ),
                                 ),
@@ -616,45 +560,45 @@ class _IssuesPageState extends State<IssuesPage> {
                 ),
               ],
             ),
-            Column(
-              children: [
-                TextButton(
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero, // No padding for this button
-                    foregroundColor: const Color.fromARGB(
-                        255, 61, 126, 64), // Green color for text and icons
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => OutliersPage(
-                          csvData: cleanedData,
-                          columns: widget.columns,
-                          classifications: widget.classifications,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.scatter_plot,
-                        color: const Color.fromARGB(
-                            255, 61, 126, 64), // Green color for icon
-                      ),
-                      Text(
-                        "Outliers",
-                        style: TextStyle(
-                            fontSize: 10.0,
-                            color: const Color.fromARGB(
-                                255, 61, 126, 64)), // Green color for text
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            // Column(
+            //   children: [
+            //     TextButton(
+            //       style: TextButton.styleFrom(
+            //         padding: EdgeInsets.zero, // No padding for this button
+            //         foregroundColor: const Color.fromARGB(
+            //             255, 61, 126, 64), // Green color for text and icons
+            //       ),
+            //       onPressed: () {
+            //         Navigator.push(
+            //           context,
+            //           MaterialPageRoute(
+            //             builder: (context) => OutliersPage(
+            //               csvData: cleanedData,
+            //               columns: widget.columns,
+            //               classifications: widget.classifications,
+            //             ),
+            //           ),
+            //         );
+            //       },
+            //       child: Column(
+            //         children: [
+            //           Icon(
+            //             Icons.scatter_plot,
+            //             color: const Color.fromARGB(
+            //                 255, 61, 126, 64), // Green color for icon
+            //           ),
+            //           Text(
+            //             "Outliers",
+            //             style: TextStyle(
+            //                 fontSize: 10.0,
+            //                 color: const Color.fromARGB(
+            //                     255, 61, 126, 64)), // Green color for text
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ],
+            // ),
             Column(
               children: [
                 TextButton(
@@ -671,6 +615,8 @@ class _IssuesPageState extends State<IssuesPage> {
                           csvData: cleanedData,
                           columns: widget.columns,
                           classifications: widget.classifications,
+                          casingSelections: widget.casingSelections,
+                          dateFormats: widget.dateFormats,
                         ),
                       ),
                     );
