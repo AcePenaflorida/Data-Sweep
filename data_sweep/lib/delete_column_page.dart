@@ -101,7 +101,7 @@ class _DeleteColumnPageState extends State<DeleteColumnPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "DATA SWEEP",
+          "Delete Columns",
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.bold,

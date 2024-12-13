@@ -256,10 +256,10 @@ class _FeatureScalingPageState extends State<FeatureScalingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 212, 216, 207),
+      backgroundColor: const Color.fromARGB(255, 229, 234, 222),
       appBar: AppBar(
         title: const Text(
-          "FEATURE SCALING",
+          "Feature Scaling",
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.bold,

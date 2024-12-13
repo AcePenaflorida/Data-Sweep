@@ -41,7 +41,7 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
       'fillValue': selectedOption == "Fill with"
           ? fillValueController.text
           : null, // Only needed for "Fill with"
-      'data': widget.csvData, // The actual dataset
+      'data': _reformattedData, // The actual dataset
     };
 
     var response = await http.post(
@@ -83,7 +83,7 @@ class _NonCategoricalPageState extends State<NonCategoricalPage> {
           },
         ),
       ),
-      backgroundColor: const Color.fromARGB(255, 212, 216, 207),
+      backgroundColor: const Color.fromARGB(255, 229, 234, 222),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),

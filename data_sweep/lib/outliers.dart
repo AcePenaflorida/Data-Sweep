@@ -75,7 +75,7 @@ class _OutliersPageState extends State<OutliersPage> {
     return numericalColumns;
   }
 
-Future<void> _downloadCSV() async {
+  Future<void> _downloadCSV() async {
     // Check storage permission before proceeding
     var status = await Permission.storage.status;
     if (!status.isGranted) {
@@ -149,7 +149,7 @@ Future<void> _downloadCSV() async {
   }
 
   void showGraphOverlay(BuildContext context, String columnName,
-    String outlierStatus, String resolveOutlierMethod) async {
+      String outlierStatus, String resolveOutlierMethod) async {
     List<List<dynamic>> data = cleanedData;
     Map<String, dynamic> requestPayload = {};
 
@@ -368,13 +368,30 @@ Future<void> _downloadCSV() async {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Download Confirmation"),
+          title: Text("Download Confirmation",
+              style: TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                "What you see in the preview is what will be downloaded. Please double-check before proceeding.",
-                style: TextStyle(fontSize: 16),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "What you see in the ",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    TextSpan(
+                      text: "preview",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    TextSpan(
+                      text:
+                          " is what will be downloaded. Please double-check before proceeding.",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
               SizedBox(height: 20),
               TextField(
@@ -389,7 +406,15 @@ Future<void> _downloadCSV() async {
                   Navigator.of(context).pop();
                   _downloadCSV(); // Proceed to download
                 },
-                child: Text("Download File"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(
+                      255, 61, 126, 64), // Green color for the button
+                ),
+                child: Text("Download File",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 255, 255, 255),
+                    )),
               ),
             ],
           ),
@@ -467,7 +492,7 @@ Future<void> _downloadCSV() async {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Formatted Data",
+                                    "Preview File",
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w500,
@@ -487,8 +512,8 @@ Future<void> _downloadCSV() async {
                         icon: const Icon(
                           Icons.remove_red_eye,
                           size: 28,
-                          color: Color.fromARGB(
-                              255, 0, 0, 0), // Add color to the icon for emphasis
+                          color: Color.fromARGB(255, 0, 0,
+                              0), // Add color to the icon for emphasis
                         ),
                         onPressed: () {
                           Navigator.push(
@@ -507,7 +532,7 @@ Future<void> _downloadCSV() async {
                 ),
               ),
               const SizedBox(height: 0),
-        
+
               // Use SingleChildScrollView to ensure the table is scrollable
               Expanded(
                 child: Padding(
@@ -547,17 +572,17 @@ Future<void> _downloadCSV() async {
                                   Text(
                                     "View the outliers in your data.",
                                     style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.grey[600]
-                                    ),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.grey[600]),
                                     textAlign: TextAlign.center,
                                   ),
                                   // Graph Display
                                   FutureBuilder<Uint8List>(
                                     future: fetchGraph(numericalColumns[index]),
                                     builder: (context, snapshot) {
-                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
                                         return CircularProgressIndicator();
                                       } else if (snapshot.hasError) {
                                         return Text(
@@ -566,7 +591,8 @@ Future<void> _downloadCSV() async {
                                         );
                                       } else {
                                         return SizedBox(
-                                          height: 300, // Adjust height as needed
+                                          height:
+                                              300, // Adjust height as needed
                                           width: double.infinity,
                                           child: Image.memory(
                                             snapshot.data!,
@@ -580,10 +606,9 @@ Future<void> _downloadCSV() async {
                                   Text(
                                     "Resolve the outliers in your data.",
                                     style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.grey[600]
-                                    ),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.grey[600]),
                                     textAlign: TextAlign.center,
                                   ),
                                   // Dropdown
@@ -593,7 +618,8 @@ Future<void> _downloadCSV() async {
                                     child: DropdownButtonHideUnderline(
                                       child: DropdownButtonFormField<String>(
                                         value: resolve_outlier_method,
-                                        items: handleOutliersOptions.map((value) {
+                                        items:
+                                            handleOutliersOptions.map((value) {
                                           return DropdownMenuItem(
                                             value: value,
                                             child: Text(
@@ -603,8 +629,10 @@ Future<void> _downloadCSV() async {
                                           );
                                         }).toList(),
                                         onChanged: (selectedValue) {
-                                          textControllers[index].text = selectedValue ?? '';
-                                          resolve_outlier_method = selectedValue!;
+                                          textControllers[index].text =
+                                              selectedValue ?? '';
+                                          resolve_outlier_method =
+                                              selectedValue!;
                                         },
                                         decoration: InputDecoration(
                                           hintText: 'Options',
@@ -612,7 +640,8 @@ Future<void> _downloadCSV() async {
                                           contentPadding: EdgeInsets.symmetric(
                                               vertical: 4, horizontal: 3),
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                         ),
                                       ),
@@ -632,10 +661,14 @@ Future<void> _downloadCSV() async {
                                           });
 
                                           // Resolve outliers and fetch updated data
-                                          await getCleanedData(context, numericalColumns[index], resolve_outlier_method);
+                                          await getCleanedData(
+                                              context,
+                                              numericalColumns[index],
+                                              resolve_outlier_method);
 
                                           // Fetch the resolved graph
-                                          var resolvedGraph = await fetchGraph(numericalColumns[index]);
+                                          var resolvedGraph = await fetchGraph(
+                                              numericalColumns[index]);
 
                                           setState(() {
                                             imageBytes = resolvedGraph;
@@ -653,12 +686,13 @@ Future<void> _downloadCSV() async {
                                       },
                                       style: TextButton.styleFrom(
                                         foregroundColor: Colors.white,
-                                        backgroundColor:
-                                            const Color.fromARGB(255, 25, 156, 4),
+                                        backgroundColor: const Color.fromARGB(
+                                            255, 25, 156, 4),
                                         padding: EdgeInsets.symmetric(
                                             horizontal: 10, vertical: 10),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                       ),
                                       child: Text(
@@ -684,7 +718,6 @@ Future<void> _downloadCSV() async {
           ),
         ),
       ),
-      
       bottomNavigationBar: BottomAppBar(
         color: Colors.white, // Set background to white
         child: Row(

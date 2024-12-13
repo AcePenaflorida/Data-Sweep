@@ -82,7 +82,7 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
           },
         ),
       ),
-      backgroundColor: const Color.fromARGB(255, 212, 216, 207),
+      backgroundColor: const Color.fromARGB(255, 229, 234, 222),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -200,7 +200,8 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (selectedOption == null || selectedOption!.isEmpty) {
+                          if (selectedOption == null ||
+                              selectedOption!.isEmpty) {
                             showCustomDialog(
                               context: context,
                               title: "No Option Selected",
@@ -209,7 +210,7 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
                             );
                             return;
                           }
-                          
+
                           if (selectedOption ==
                                   "Fill/Replace with Custom Value" &&
                               double.tryParse(customValueController.text) ==
@@ -220,10 +221,10 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
                               content: "Please enter a valid numeric value.",
                               buttonLabel: "OK",
                             );
-                            
+
                             return;
                           }
-                          
+
                           try {
                             _reformattedData = await resolveIssue();
                             Navigator.pop(context, _reformattedData);
@@ -235,7 +236,6 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
                               buttonLabel: "OK",
                             );
                           }
-
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3D7E40),

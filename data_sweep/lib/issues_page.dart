@@ -262,7 +262,7 @@ class _IssuesPageState extends State<IssuesPage> {
       backgroundColor: const Color.fromARGB(255, 229, 234, 222),
       appBar: AppBar(
         title: const Text(
-          "DATA CLEANING",
+          "Data Cleaning",
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.bold,
