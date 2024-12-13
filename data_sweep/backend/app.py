@@ -729,7 +729,6 @@ def reformat_column():
     return jsonify(data)
 
 
-
 @app.route('/non_categorical_missing_values', methods=['POST'])
 def process_data():
     print("YOU GOT HERE")
@@ -738,43 +737,54 @@ def process_data():
     action = data.get('action')
     fill_value = data.get('fillValue')
     dataset = data.get('data')
-    print(fill_value)
+    print(f"Fill value: {fill_value}")
 
     if not dataset:
         return jsonify({"error": "No data provided"}), 400
 
-    # Create a DataFrame and replace empty strings with NaN
-    df = pd.DataFrame(dataset[1:], columns=dataset[0]).replace("", np.nan)
+    # Create a DataFrame, no replacement of empty strings with NaN
+    df = pd.DataFrame(dataset[1:], columns=dataset[0])
 
     if column_name not in df.columns:
         return jsonify({"error": "Column not found"}), 400
 
     if action == "Remove Rows":
-        print("Action: Remove Rows")
-        cleaned_df = df.dropna(subset=[column_name])
-        cleaned_df = cleaned_df.applymap(lambda x: "" if pd.isna(x) else x)
+        print(f"Action: Remove Rows for column: {column_name}")
+        
+        # Filter out rows where the column contains empty strings or spaces
+        cleaned_df = df[df[column_name].str.strip().ne('')]  # Remove rows with empty or space-only strings
         cleaned_data = [list(cleaned_df.columns)] + cleaned_df.values.tolist()
+        print(f"Cleaned data: {cleaned_data}")
         return jsonify(cleaned_data)
 
     elif action == "Fill with":
-        if fill_value is None or fill_value == "": 
-            fill_value = ""  # or set a default value
-        column_index = dataset[0].index(column_name)  # Get column index from header
-        print(f"Column Index: {column_index}")
-
-        for row in dataset[1:]:
-            if row[column_index] in [None, ""]:  # If the value is missing
-                row[column_index] = fill_value
+        # Check if fill_value is valid (not None or empty)
+        if fill_value is None or fill_value == "":
+            return jsonify({"error": "Fill value cannot be None or empty"}), 400
         
-        return jsonify(dataset)
+        print(f"Before fill operation: {df[column_name]}")
+
+        # Apply fill operation to the correct column (handle empty strings)
+        if df[column_name].dtype == 'object':  # If the column is of type object (e.g., string)
+            df[column_name] = df[column_name].replace('', fill_value)  # Replace empty strings with fill_value
+            df[column_name] = df[column_name].replace(' ', fill_value)  # Replace spaces with fill_value
+        
+        print(f"After fill operation: {df[column_name]}")
+        
+        # Prepare the response with the updated data
+        filled_data = [list(df.columns)] + df.values.tolist()
+        print(f"Filled data: {filled_data}")
+        return jsonify(filled_data)
 
     elif action == "Fill with Mode":
         print("Action: Fill with Mode")
         mode_value = df[column_name].mode().iloc[0] if not df[column_name].mode().empty else ""
         print(f"Mode Value for {column_name}: {mode_value}")
-
-        df[column_name] = df[column_name].fillna(mode_value)
-        filled_data = [list(df.columns)] + df.applymap(lambda x: "" if pd.isna(x) else x).values.tolist()
+        
+        # Replace empty strings in the column with mode value
+        df[column_name] = df[column_name].replace('', mode_value)
+        
+        filled_data = [list(df.columns)] + df.values.tolist()
         return jsonify(filled_data)
 
     elif action == "Leave Blank":
@@ -782,6 +792,11 @@ def process_data():
 
     else:
         return jsonify({"error": "Invalid action"}), 400
+
+
+
+
+
 
 
 
