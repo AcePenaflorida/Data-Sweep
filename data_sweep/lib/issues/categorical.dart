@@ -26,8 +26,7 @@ class _CategoricalPageState extends State<CategoricalPage> {
   late List<String> uniqueValues;
   late List<List<dynamic>> _reformattedDataset;
 
-  String? missingValueOption =
-      "Leave Blank"; // Default option set to "Leave Blank"
+  String? missingValueOption = ""; // Default option set to "Leave Blank"
   TextEditingController fillValueController = TextEditingController();
 
   @override
@@ -43,7 +42,7 @@ class _CategoricalPageState extends State<CategoricalPage> {
 
     // Check for missing values in the column
     bool hasMissingValues =
-        widget.categoricalData.any((value) => value.isEmpty);
+        widget.categoricalData.any((value) => value.trim().isEmpty);
 
     // Set missingValuesResolved based on whether there are missing values
     missingValuesResolved = !hasMissingValues;
@@ -265,6 +264,61 @@ class _CategoricalPageState extends State<CategoricalPage> {
                     child: ElevatedButton(
                       onPressed: () async {
                         try {
+                          // Check if the user selected "Fill with" but didn't enter a value
+                          if (missingValueOption == "Fill with" &&
+                              fillValueController.text.isEmpty) {
+                            // Show alert dialog to inform the user to fill in the value
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text(
+                                    "Missing Value",
+                                    style: TextStyle(
+                                      color: Color(
+                                          0xFF3D7E40), // Green color matching the app's theme
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  content: const Text(
+                                    "Please enter a value to fill with.",
+                                    style: TextStyle(
+                                        color: Colors
+                                            .black), // Black text for content
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(
+                                            context); // Close the dialog
+                                      },
+                                      child: const Text(
+                                        "OK",
+                                        style: TextStyle(
+                                          color: Color(
+                                              0xFF3D7E40), // Green color for the button text
+                                          fontWeight: FontWeight
+                                              .bold, // Bold text for the button
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        12), // Rounded corners for the dialog
+                                  ),
+                                  backgroundColor: Colors
+                                      .white, // White background to keep the focus on the message
+                                  elevation:
+                                      5, // Slight shadow for better visibility
+                                );
+                              },
+                            );
+
+                            return; // Exit the function without continuing
+                          }
+
+                          // Proceed with resolving missing values if all conditions are met
                           if (missingValueOption == "Leave Blank") {
                             setState(() {
                               missingValuesResolved = true;

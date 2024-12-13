@@ -7,7 +7,6 @@ class NumericalIssuePage extends StatefulWidget {
   final String columnName;
   final List<String> issues;
   final List<List<dynamic>> csvData;
-
   NumericalIssuePage({
     required this.columnName,
     required this.issues,
@@ -22,6 +21,7 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
   late List<List<dynamic>> _reformattedData;
   String? selectedOption = "";
   final TextEditingController customValueController = TextEditingController();
+  bool isResolving = false;
 
   @override
   void initState() {
@@ -199,60 +199,87 @@ class _NumericalIssuePageState extends State<NumericalIssuePage> {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () async {
-                          if (selectedOption == null ||
-                              selectedOption!.isEmpty) {
-                            showCustomDialog(
-                              context: context,
-                              title: "No Option Selected",
-                              content: "Please select a valid method.",
-                              buttonLabel: "OK",
-                            );
-                            return;
-                          }
+                        onPressed: isResolving
+                            ? null // Disable the button when `isResolving` is true
+                            : () async {
+                                setState(() {
+                                  isResolving = true; // Start resolving
+                                });
 
-                          if (selectedOption ==
-                                  "Fill/Replace with Custom Value" &&
-                              double.tryParse(customValueController.text) ==
-                                  null) {
-                            showCustomDialog(
-                              context: context,
-                              title: "Oops",
-                              content: "Please enter a valid numeric value.",
-                              buttonLabel: "OK",
-                            );
+                                if (selectedOption == null ||
+                                    selectedOption!.isEmpty) {
+                                  showCustomDialog(
+                                    context: context,
+                                    title: "No Option Selected",
+                                    content: "Please select a valid method.",
+                                    buttonLabel: "OK",
+                                  );
+                                  setState(() {
+                                    isResolving = false; // End resolving
+                                  });
+                                  return;
+                                }
 
-                            return;
-                          }
+                                if (selectedOption ==
+                                        "Fill/Replace with Custom Value" &&
+                                    double.tryParse(
+                                            customValueController.text) ==
+                                        null) {
+                                  showCustomDialog(
+                                    context: context,
+                                    title: "Oops",
+                                    content:
+                                        "Please enter a valid numeric value.",
+                                    buttonLabel: "OK",
+                                  );
+                                  setState(() {
+                                    isResolving = false; // End resolving
+                                  });
+                                  return;
+                                }
 
-                          try {
-                            _reformattedData = await resolveIssue();
-                            Navigator.pop(context, _reformattedData);
-                          } catch (error) {
-                            showCustomDialog(
-                              context: context,
-                              title: "Unable to resolve the issue..",
-                              content: "Please select a valid method.",
-                              buttonLabel: "OK",
-                            );
-                          }
-                        },
+                                try {
+                                  _reformattedData = await resolveIssue();
+                                  Navigator.pop(context, _reformattedData);
+                                } catch (error) {
+                                  showCustomDialog(
+                                    context: context,
+                                    title: "Unable to resolve the issue..",
+                                    content: "Please select a valid method.",
+                                    buttonLabel: "OK",
+                                  );
+                                } finally {
+                                  setState(() {
+                                    isResolving =
+                                        false; // End resolving after the process
+                                  });
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF3D7E40),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                12), // Set the radius here
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          "Resolve",
-                          style: TextStyle(
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: isResolving
+                            ? const SizedBox(
+                                height: 20, // Set the height for a smaller size
+                                width: 20, // Set the width for a smaller size
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth:
+                                      3, // Adjust the stroke width to make the indicator smaller
+                                ),
+                              )
+                            : const Text(
+                                "Resolve",
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ),

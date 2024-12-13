@@ -586,7 +586,7 @@ class _OutliersPageState extends State<OutliersPage> {
                                         return CircularProgressIndicator();
                                       } else if (snapshot.hasError) {
                                         return Text(
-                                          "Error loading graph",
+                                          "Missing/invalid values detected. Please resolve in Issues.",
                                           style: TextStyle(color: Colors.red),
                                         );
                                       } else {
