@@ -1,3 +1,4 @@
+
 <h1 align="center">DATA SWEEP: CSV Dataset Cleaning App</h1>
 
 📢 **Please check the other branches in the repository** for additional details and development progress. You can find the branches [here](https://github.com/AcePenaflorida/Data-Sweep/branches).
@@ -60,11 +61,12 @@ Data Sweep is a mobile app designed to help users efficiently clean and preproce
 
 5. Run the **Flutter Frontend** on a mobile device or simulator:
 
+
     ```bash
     flutter run
     ```
-
 6. Launch the app and begin cleaning your CSV datasets with ease!
+
 
 ## 🔧 Built With
 * [Flutter](https://flutter.dev/) - Mobile App Framework
@@ -72,6 +74,7 @@ Data Sweep is a mobile app designed to help users efficiently clean and preproce
 * [CSV](https://www.ietf.org/rfc/rfc4180.txt) - Data Format
 
 ## 👥 Members
+
 * [Viviene](https://github.com/VivieneGarcia) 
 * [Rain Lyra](https://github.com/rnlyra)
 * [Paul](https://github.com/PaulVincent-Calvo) 
@@ -80,5 +83,3 @@ Data Sweep is a mobile app designed to help users efficiently clean and preproce
 
 ## 🌟Acknowledgments
 * Ma'am Lysa Tolentino - App Dev Prof
-
-

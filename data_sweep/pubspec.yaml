@@ -45,6 +45,7 @@ dependencies:
 
 dev_dependencies:
   flutter_launcher_icons: ^0.9.2
+  
 
 flutter_icons:
   android: true
@@ -68,6 +69,10 @@ flutter_icons:
 flutter:
   assets:
     - assets/Grizz.jpg
+    - assets/DataCleaning.png
+    - assets/DataVisualization.png
+    - assets/FeatureScaling.png
+    - assets/HandleOutliers.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -103,3 +108,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  

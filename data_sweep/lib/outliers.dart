@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:csv/csv.dart';
 import 'package:data_sweep/config.dart';
+import 'package:data_sweep/issues_page.dart';
 import 'package:data_sweep/main.dart';
 import 'package:data_sweep/preview_page.dart';
 import 'package:data_sweep/scaling_page.dart';
@@ -16,11 +17,15 @@ class OutliersPage extends StatefulWidget {
   final List<List<dynamic>> csvData;
   final List<String> columns;
   final List<List<int>> classifications;
+  final List<String> casingSelections;
+  final List<String> dateFormats;
 
   const OutliersPage({
     required this.csvData,
     required this.columns,
     required this.classifications,
+    required this.casingSelections,
+    required this.dateFormats,
   });
 
   @override
@@ -31,7 +36,7 @@ class _OutliersPageState extends State<OutliersPage> {
   final _fileNameController = TextEditingController();
   late List<TextEditingController> textControllers;
   late List<String> handleOutliersOptions = [
-    'Remove Rows',
+    'Remove',
     'Cap and Floor',
     'Replace with Mean',
     'Replace with Median'
@@ -148,6 +153,8 @@ class _OutliersPageState extends State<OutliersPage> {
                       csvData: cleanedData,
                       columns: widget.columns,
                       classifications: widget.classifications,
+                      casingSelections: widget.casingSelections,
+                      dateFormats: widget.dateFormats,
                     ),
                   ),
                 );
@@ -164,6 +171,8 @@ class _OutliersPageState extends State<OutliersPage> {
                       csvData: cleanedData,
                       columns: widget.columns,
                       classifications: widget.classifications,
+                      casingSelections: widget.casingSelections,
+                      dateFormats: widget.dateFormats,
                     ),
                   ),
                 );
@@ -200,8 +209,8 @@ class _OutliersPageState extends State<OutliersPage> {
   }
 
   void showGraphOverlay(BuildContext context, String columnName,
-      String outlierStatus, String resolveOutlierMethod) async {
-    List<List<dynamic>> data = widget.csvData;
+    String outlierStatus, String resolveOutlierMethod) async {
+    List<List<dynamic>> data = cleanedData;
     Map<String, dynamic> requestPayload = {};
 
     if (outlierStatus == "Not Resolved") {
@@ -270,9 +279,34 @@ class _OutliersPageState extends State<OutliersPage> {
     }
   }
 
+  Future<Uint8List> fetchUnresolvedGraph(String columnName) async {
+    Map<String, dynamic> requestPayload = {
+      'data': cleanedData,
+      'column_name': columnName,
+      'task': "Show Outliers",
+      'method': "",
+    };
+
+    try {
+      var response = await http.post(
+        Uri.parse('$baseURL/outliers_graph'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestPayload),
+      );
+
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        throw Exception("Failed to fetch graph");
+      }
+    } catch (e) {
+      throw Exception("Error fetching graph: $e");
+    }
+  }
+
   Future<void> getCleanedData(BuildContext context, String columnName,
       String resolveOutlierMethod) async {
-    List<List<dynamic>> data = widget.csvData;
+    List<List<dynamic>> data = cleanedData;
     Map<String, dynamic> requestPayload = {};
 
     requestPayload = {
@@ -377,8 +411,8 @@ class _OutliersPageState extends State<OutliersPage> {
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close the error dialog
-                  Navigator.of(context).pop(); // Go back to the previous page
+                  Navigator.of(context)
+                      .pop(); // Close the error dialog // Go back to the previous page
                 },
                 child: Text('Go Back'),
               ),
@@ -431,259 +465,457 @@ class _OutliersPageState extends State<OutliersPage> {
     print("Numerical Columns: $numericalColumns");
 
     return Scaffold(
-      appBar: AppBar(title: Text("Handle Outliers")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PreviewPage(
-                      csvData: cleanedData,
-                      fileName: "Formatted Data",
-                    ),
+      appBar: AppBar(
+        title: const Text(
+          "Handle Outliers",
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 61, 126, 64),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 24, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Container(
+        color: const Color.fromARGB(255, 229, 234, 222),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-              child: Text("Preview CSV Data"),
-            ),
-            const SizedBox(height: 20),
-
-            // Use SingleChildScrollView to ensure the table is scrollable
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Table(
-                      border: TableBorder.all(),
-                      children: [
-                        TableRow(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            TableCell(
-                              child: Center(
-                                child: Text(
-                                  "Numerical Columns",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(
+                                    255, 126, 173, 128), // Background color
+                                borderRadius: BorderRadius.circular(
+                                    6), // Set the border radius here
+                              ),
+                              child: Icon(
+                                Icons.description,
+                                size: 40,
+                                color: const Color.fromARGB(255, 17, 17, 17),
                               ),
                             ),
-                            TableCell(
-                              child: Center(
-                                child: Text(
-                                  "View Outliers",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            TableCell(
-                              child: Center(
-                                child: Text(
-                                  "Resolve Outliers",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            TableCell(
-                              child: Center(
-                                child: Text(
-                                  "Fix and View Resolved Outliers",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Formatted Data",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: 'Roboto',
+                                      color: Colors.black87,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        ...List.generate(numericalColumns.length, (index) {
-                          return TableRow(
-                            children: [
-                              TableCell(
-                                child: Center(
-                                    child: Text(numericalColumns[index])),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.remove_red_eye,
+                          size: 28,
+                          color: Color.fromARGB(
+                              255, 0, 0, 0), // Add color to the icon for emphasis
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PreviewPage(
+                                csvData: cleanedData,
+                                fileName: "Formatted Data",
                               ),
-                              TableCell(
-                                child: Center(
-                                  child: TextButton(
-                                    onPressed: () {
-                                      outlierStatus = "Not Resolved";
-                                      showGraphOverlay(
-                                          context,
-                                          numericalColumns[index],
-                                          outlierStatus,
-                                          "");
-                                      print("Outliers Not Resolved");
-                                    },
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor:
-                                          const Color.fromARGB(255, 25, 156, 4),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      minimumSize: Size(0, 0),
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      "Graph View",
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              TableCell(
-                                child: Center(
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButtonFormField<String>(
-                                      value: resolve_outlier_method,
-                                      items: handleOutliersOptions.map((value) {
-                                        return DropdownMenuItem(
-                                          value: value,
-                                          child: Text(value,
-                                              style: TextStyle(fontSize: 11)),
-                                        );
-                                      }).toList(),
-                                      onChanged: (selectedValue) {
-                                        textControllers[index].text =
-                                            selectedValue ?? '';
-
-                                        if (selectedValue ==
-                                            handleOutliersOptions[0]) {
-                                          resolve_outlier_method = "Remove";
-                                        } else if (selectedValue ==
-                                            handleOutliersOptions[1]) {
-                                          resolve_outlier_method =
-                                              "Cap and Floor";
-                                        } else if (selectedValue ==
-                                            handleOutliersOptions[2]) {
-                                          resolve_outlier_method =
-                                              "Replace with Mean";
-                                        } else if (selectedValue ==
-                                            handleOutliersOptions[3]) {
-                                          resolve_outlier_method =
-                                              "Replace with Median";
-                                        }
-                                      },
-                                      decoration: InputDecoration(
-                                        hintText: 'Options',
-                                        hintStyle: TextStyle(fontSize: 12),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              TableCell(
-                                child: Center(
-                                  child: TextButton(
-                                    onPressed: () {
-                                      outlierStatus = "Resolved";
-                                      showGraphOverlay(
-                                          context,
-                                          numericalColumns[index],
-                                          outlierStatus,
-                                          resolve_outlier_method);
-                                      print("Outliers Resolved");
-                                    },
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor:
-                                          const Color.fromARGB(255, 25, 156, 4),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      minimumSize: Size(0, 0),
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      "Graph View",
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           );
-                        }),
-                      ],
-                    ),
-                  ],
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-            // Keep the TextField and buttons for filename and navigation below the table
-            const SizedBox(height: 20),
-            TextField(
-              controller: _fileNameController,
-              decoration: InputDecoration(
-                labelText: "Enter Filename for Download (without .csv)",
+              const SizedBox(height: 0),
+        
+              // Use SingleChildScrollView to ensure the table is scrollable
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          offset: Offset(0, 4),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ...List.generate(numericalColumns.length, (index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Title
+                                  Text(
+                                    "${numericalColumns[index]}",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "View the outliers in your data.",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.grey[600]
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  // Graph Display
+                                  FutureBuilder<Uint8List>(
+                                    future: fetchUnresolvedGraph(numericalColumns[index]),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                        return CircularProgressIndicator();
+                                      } else if (snapshot.hasError) {
+                                        return Text(
+                                          "Error loading graph",
+                                          style: TextStyle(color: Colors.red),
+                                        );
+                                      } else {
+                                        return SizedBox(
+                                          height: 300, // Adjust height as needed
+                                          width: double.infinity,
+                                          child: Image.memory(
+                                            snapshot.data!,
+                                            fit: BoxFit.contain,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "Resolve the outliers in your data.",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.grey[600]
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  // Dropdown
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButtonFormField<String>(
+                                        value: resolve_outlier_method,
+                                        items: handleOutliersOptions.map((value) {
+                                          return DropdownMenuItem(
+                                            value: value,
+                                            child: Text(
+                                              value,
+                                              style: TextStyle(fontSize: 14),
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (selectedValue) {
+                                          textControllers[index].text = selectedValue ?? '';
+                                          resolve_outlier_method = selectedValue!;
+                                        },
+                                        decoration: InputDecoration(
+                                          hintText: 'Options',
+                                          hintStyle: TextStyle(fontSize: 12),
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 4, horizontal: 3),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  // View Resolved Graph Button
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            outlierStatus = "Resolved";
+                                            fetchUnresolvedGraph(numericalColumns[index]); // Fetch resolved graph
+                                          });
+                                          print("Outliers Resolved");
+                                        },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        backgroundColor:
+                                            const Color.fromARGB(255, 25, 156, 4),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 10),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        "View Resolved Graph",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _showDownloadDialog(context);
-              },
-              child: Text("Download CSV"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FeatureScalingPage(
-                      csvData: cleanedData,
-                      columns: widget.columns,
-                      classifications: widget.classifications,
-                    ),
+            ],
+          ),
+        ),
+      ),
+      
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white, // Set background to white
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(255, 61, 126,
+                        64), // Use the green color for text and icons
                   ),
-                );
-              },
-              child: Text("Go to Feature Scaling"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => VisualizationPage(
-                      csvData: cleanedData,
-                      columns: widget.columns,
-                      classifications: widget.classifications,
-                    ),
+                  onPressed: () {
+                    _showDownloadDialog(context); // Show download confirmation
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.download,
+                        size: 20.0,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
+                      Text(
+                        "Download",
+                        style: TextStyle(
+                          fontSize: 10.0, // Adjust the font size
+                          color: const Color.fromARGB(
+                              255, 61, 126, 64), // Green color for text
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              },
-              child: Text("Go to Data Visualization"),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                // Close the current screen
-                Navigator.pop(context);
-
-                // Navigate to the HomePage and remove all previous routes
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                  (Route<dynamic> route) =>
-                      false, // This removes all previous routes
-                );
-              },
-              child: Text("GO BACK TO HOME PAGE"),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IssuesPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                          casingSelections: widget.casingSelections,
+                          dateFormats: widget.dateFormats,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
+                      Text(
+                        "Issues",
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FeatureScalingPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                          casingSelections: widget.casingSelections,
+                          dateFormats: widget.dateFormats,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.transform,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
+                      Text(
+                        "Scaling",
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VisualizationPage(
+                          csvData: cleanedData,
+                          columns: widget.columns,
+                          classifications: widget.classifications,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.bar_chart,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
+                      Text(
+                        "Visualize",
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // No padding for this button
+                    foregroundColor: const Color.fromARGB(
+                        255, 61, 126, 64), // Green color for text and icons
+                  ),
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                      (Route<dynamic> route) => false,
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.home,
+                        color: const Color.fromARGB(
+                            255, 61, 126, 64), // Green color for icon
+                      ),
+                      Text(
+                        "Home",
+                        style: TextStyle(
+                            fontSize: 10.0,
+                            color: const Color.fromARGB(
+                                255, 61, 126, 64)), // Green color for text
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
