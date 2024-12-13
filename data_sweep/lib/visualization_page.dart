@@ -27,6 +27,7 @@ class VisualizationPage extends StatelessWidget {
     });
 
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 229, 234, 222),
       appBar: AppBar(
         title: const Text(
           "Data Visualization",
