@@ -75,7 +75,7 @@ class _OutliersPageState extends State<OutliersPage> {
     return numericalColumns;
   }
 
-  Future<void> _downloadCSV() async {
+Future<void> _downloadCSV() async {
     // Check storage permission before proceeding
     var status = await Permission.storage.status;
     if (!status.isGranted) {
@@ -135,66 +135,6 @@ class _OutliersPageState extends State<OutliersPage> {
             content: Text('Storage permission is required to save the file.')),
       );
     }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Downloaded!"),
-          content: Text("Would you like to do more things, Kimi?"),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => OutliersPage(
-                      csvData: cleanedData,
-                      columns: widget.columns,
-                      classifications: widget.classifications,
-                      casingSelections: widget.casingSelections,
-                      dateFormats: widget.dateFormats,
-                    ),
-                  ),
-                );
-              },
-              child: Text("Go to Outliers"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FeatureScalingPage(
-                      csvData: cleanedData,
-                      columns: widget.columns,
-                      classifications: widget.classifications,
-                      casingSelections: widget.casingSelections,
-                      dateFormats: widget.dateFormats,
-                    ),
-                  ),
-                );
-              },
-              child: Text("Go to Feature Scaling"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to Home page
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                  (Route<dynamic> route) => false, // Remove all previous routes
-                );
-              },
-              child: Text("Go to Home"),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<String> _getDownloadsDirectoryPath() async {
@@ -279,7 +219,7 @@ class _OutliersPageState extends State<OutliersPage> {
     }
   }
 
-  Future<Uint8List> fetchUnresolvedGraph(String columnName) async {
+  Future<Uint8List> fetchGraph(String columnName) async {
     Map<String, dynamic> requestPayload = {
       'data': cleanedData,
       'column_name': columnName,
@@ -615,7 +555,7 @@ class _OutliersPageState extends State<OutliersPage> {
                                   ),
                                   // Graph Display
                                   FutureBuilder<Uint8List>(
-                                    future: fetchUnresolvedGraph(numericalColumns[index]),
+                                    future: fetchGraph(numericalColumns[index]),
                                     builder: (context, snapshot) {
                                       if (snapshot.connectionState == ConnectionState.waiting) {
                                         return CircularProgressIndicator();
@@ -684,13 +624,33 @@ class _OutliersPageState extends State<OutliersPage> {
                                     width: double.infinity,
                                     height: 50,
                                     child: TextButton(
-                                        onPressed: () {
+                                      onPressed: () async {
+                                        try {
                                           setState(() {
                                             outlierStatus = "Resolved";
-                                            fetchUnresolvedGraph(numericalColumns[index]); // Fetch resolved graph
+                                            isLoading = true;
                                           });
+
+                                          // Resolve outliers and fetch updated data
+                                          await getCleanedData(context, numericalColumns[index], resolve_outlier_method);
+
+                                          // Fetch the resolved graph
+                                          var resolvedGraph = await fetchGraph(numericalColumns[index]);
+
+                                          setState(() {
+                                            imageBytes = resolvedGraph;
+                                            isLoading = false;
+                                          });
+
                                           print("Outliers Resolved");
-                                        },
+                                        } catch (e) {
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                          print("Error: $e");
+                                          _showErrorDialog(context);
+                                        }
+                                      },
                                       style: TextButton.styleFrom(
                                         foregroundColor: Colors.white,
                                         backgroundColor:
